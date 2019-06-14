@@ -2,85 +2,135 @@
 
 ## main goal
 
-Create a sandbox running Openshift.
+Create a sandbox running OpenShift version 3.11 (last version of the 3.XX releases).
 
 keywords: OpenShift 3.11, VirtualBox, CentOS 7 1810, Bare Metal Server
+
+> Please read all this documentation before starting installing OpenShift.
 
 ### installation sandbox
 
 > OpenShift is intimately linked with RedHat products like RedHat RHEL7 (enterprise grade product) or CentOS7 (OpenSource version of RHEL7);
-> Using other distribution is not supported and will not work as expected;
+> Using other distribution is not supported by this document and will not work as expected;
 > Some software dependencies last version are not supported by OpenShift like Docker where only version 1.13.1 is supported.
 
 This tutorial used a VirtualBox instance to understand how to setup OpenShift on a full system installation. However it is possible to reproduce it on a real bare metal server.
+Using a bare metal server will need a real dns name to make it accessible from the web (not covered by this documentation).
 
 **What will be installed ?**
 
 The version of OpenShift 3.11 under a virtual machine.
 
-**Why not version 4.0 of OpenShift ?**
+**Why not install version 4.0 of OpenShift ?**
 
 Version 4.0 does not rely on Ansible anymore. A script is provided to install OpenShift on *AWS* or *Azure* only (not Bare Metal Server).
-Installing it on AWS create several EC2 instances: one master, two nodes and a worker.
+Installing it on AWS create several EC2 instances: one master, two nodes and a worker. So by the new architecture introduced by the 4.XX releases more than 1 server is needed.
 
-This documentation is about a full OpenShift instance in one server.
+This documentation is about installing a full OpenShift instance in one server.
 
-#### Prerequisites:
+**Infrastructure**
+
+Internet connection is mandatory
+
+The host will have this IP : 10.0.0.10 defined on the interface use to connect to internet (like the wifi wlo1)
+
+The virtual machine will be configured using this setup:
+- 2 cpu
+- at least 5Gb of ram
+- bridged network using the interface use to connect with internet (in my case wlo1)
+
+The IP used by the virtual machine will be defined to 10.0.0.11;
+
+In further paragraph I will give every commands needed to setup host IP and virtual machine IP and also DNS entries.
+
+#### Prerequisites
 
 - VirtualBox installed
 - CentOS-7-x86_64-Minimal-1810.iso Image
+- an active internet connection
 
 #### Installation
 
-Binary: OpenShift 3.11 is available as prepackaged binary from okd.io however I discourage the use of them because some features like cluster ui, metrics and logging are not available.
+> Binary: OpenShift 3.11 is available as prepackaged binary from okd.io. However I discourage the use of them because some features like cluster ui, metrics and logging are not available.
 
-We will install a "real" OpenShift will all expected feature in next paragraph.
+##### Prerequisites
 
-To install OpenShift on VirtualBox step by step please follow theses videos from the OpenShift youtube chanel:
+We will install a "real" OpenShift with all expected features in next paragraph.
+
+To install OpenShift on VirtualBox step by step please follow theses videos from the **OpenShift** youtube chanel:
 - https://www.youtube.com/watch?v=ZkFIozGY0IA
 - https://www.youtube.com/watch?v=S7HoJ09oYn0
 
-Code to use is available here: gt
-
-##### configuration
+Code to use is available here: **https://github.com/gshipley/installcentos/**
 
 The virtual machine use enp0s3 as internal network.
 
-Here is my configuration:
+##### Procedure
 
-CentOS user: sandbox
+1. Install CentOS
 
-install-openshift:
-Domain to use: (83.115.164.226.nip.io): sandbox.nip.io
-Username: (root): sandbox
-Password: (password): what you want as password
-OpenShift Version: (3.11):
-IP: (192.168.1.13):
+2. Install useful tools like vim and telnet in the virtual machine
+
+> (from host) ssh root@IP
+> yum install vim, telnet
+
+3. Define host IP (Arch linux from my case)
+
+> from host : **sudo ip addr add 10.0.0.10/24 dev wlo1**
+> Warning: each time the network connect to internet you will have to re-run the command.
+> TODO : find a way to make it persistent
+
+4. Define virtual machine IP
+
+4.1. connect to the virtual machine (using ssh or other)
+4.2. copy ifcfg-enp0s3:1 into /etc/sysconfig/network-scripts/ifcfg-enp0s3:1
+4.3. ensure that **ifcfg-enp0s3:1** as same rights, owner and group than **ifcfg-enp0s3** (you can use **cp -p** and next replace all the content)
+4.4. restart the network **systemctl restart network**
+
+> Now doing this command **ip addr show|grep 10.0.0.11** should return **inet 10.0.0.11/24 brd 10.0.0.255 scope global noprefixroute enp0s3:1**
+> So the addresse IP **10.0.0.11** is well linked to **enp0s3:1**
+
+4.5. Run the script **install-openshift.sh**
+4.6. Answer questions with theses responses:
+
+Domain to use: (81.57.127.51.nip.io): **10.0.0.11**
+Username: (root): **sandbox**
+Password: (password): **sandbox**
+OpenShift Version: (3.11): 
+IP: (192.168.0.22): **10.0.0.11**
 API Port: (8443):
 
-Let's encrypt is not used
+> The domain to use correspond to the virtual machine IP.
+> As you can see a 'dynamic' IP (192.168.0.22) is proposed. I ensure to use the one fixed on my interface (ie: 10.0.0.11)
+> Let's Encrypt will not be installed because my IP used as domain to use is not public
 
-My Host on which VirtualBox is running is an Arch linux.
-The IP of my virtual machine running OpenShift is 192.168.1.13.
-To translate the domain name *sandbox* to the machine I have added this entry in XXX
+4.7. Wait a lot of time
 
-oc login -u sandbox -p admin https://console.sandbox.nip.io:8443/
+4.9. Add dns entries in host
 
+> I need to translate domain and sub-domain addresses represented as **sub-domain.10.0.0.11** to the virtual machine running OpenShift IP address **10.0.0.11**
 
-https://console.sandbox.nip.io:8443/swaggerui/
+echo "10.0.0.11       console.10.0.0.11       console.10.0.0.11" >> /etc/hosts
+echo "10.0.0.11       console.apps.10.0.0.11  console.apps.10.0.0.11" >> /etc/hosts
+echo "10.0.0.11       prometheus-k8s-openshift-monitoring.apps.10.0.0.11 prometheus-k8s-openshift-monitoring.apps.10.0.0.11" >> /etc/hosts
+echo "10.0.0.11       alertmanager-main-openshift-monitoring.apps.10.0.0.11 alertmanager-main-openshift-monitoring.apps.10.0.0.11" >> /etc/hosts
+echo "10.0.0.11       grafana-openshift-monitoring.apps.10.0.0.11 grafana-openshift-monitoring.apps.10.0.0.11" >> /etc/hosts
 
-rajouter le paragraphe concernant la configuration presente dans master yaml
+> Keep in mind that the dns entries in the host must be updated when exposing a new application route from the virtual machine running OpenShift.
 
-TODO !!!
+> With 5gb of ram I could not install logging feature. So maybe you should add another entries in your hosts corresponding to logging web interfaces.
 
-TODO setup DNS
+5.0. login :)
 
-Host:
-echo "192.168.1.13    console.sandbox.nip.io  console.sandbox.nip.io" >> /etc/hosts
+You can login by using your browser from your host and this URL **https://console.apps.10.0.0.11**
+
+Or by using this command in the virtual machine from the host:
+- ssh sandbox@10.0.0.11
+- oc login -u sandbox -p admin https://console.10.0.0.11:8443/
 
 ##### Additional Information
 
-The script *install-openshift.sh* used to install OpenShift will check the memory available to install or not some features.
+The script **install-openshift.sh** used to install OpenShift will check the memory available to install or not some features.
 
 So, to install metric feature you will need at least 4Gb of memory, to install the logging feature you will need at least 16gb of memory.
 
@@ -88,105 +138,16 @@ You can have a look to the content of *install-openshift.sh* to understand how O
 
 Running the interactive mode will generate 200 persistent volumes of 500Gb each in the cluster.
 
-#### Going further
+#### Tips
 
-I am using a 
+> Check that OpenShift is running from the virtual machine by using this command **curl -k https://console.apps.10.0.0.11/**.
 
-// TODO j'install sandbox avec orange puis je test avec 
+> OpenShift config files are located here **/etc/origin/**. It may be useful to see the content of **master-config.yaml**.
 
+> To show network address ip: **ip address show**.
 
+> Get router ip: **curl -s ipinfo.io/ip**.
 
-connect as sandbox
+> You can ping 10.0.0.10 and 10.0.0.11 from host and virtual machine to ensure that network is working well. 
 
-ip address show
-> get ip address of enp0s3
-
-##### diagnostic OpenShift
-
-machine virtuelle:
-
-get router ip: curl -s ipinfo.io/ip
-
-ping 83.115.164.226.nip.io
-ping sandbox.nip.io
-
-docker ps -a | grep -v CONTAINER| awk '{system("docker logs "$1)}'
-
-###### no dns 8.8.8.8 defined
-
-nmcli:
-DNS configuration:
-        servers: 192.168.1.1
-        domains: home
-        interface: enp0s3
-
-do:
-nmcli con mod enp0s3 ipv4.dns "8.8.8.8 8.8.4.4"
-nmcli con mod enp0s3 ipv4.ignore-auto-dns yes
-service network restart
-
-result:
-DNS configuration:
-        servers: 8.8.8.8 8.8.4.4
-        interface: enp0s3
-
-######## flut
-/etc/environment
-
-
-REFAIRE installation en SSH via ROOT !!!
-c'est peut être cela le problème ...
-
-
-
-
-## conf default:
-
-
-Domain to use: (83.115.164.226.nip.io): 
-Username: (root): sandbox
-Password: (password): admin
-OpenShift Version: (3.11): 
-IP: (192.168.1.15): 
-API Port: (8443):
-
-si ok verifier les conf /etc/resolv.conf /etc/hosts...
-
-
-
-Your console is https://console.81.57.127.51.nip.io:8443
-* Your username is sandbox 
-* Your password is sandbox 
-*
-* Login using:
-*
-$ oc login -u sandbox -p sandbox https://console.81.57.127.51.nip.io:8443/
-
-curl -s ipinfo.io/ip
-
-ip addr show|grep 192
-cat /etc/origin/master/master-config.yaml|grep 192
-vim /etc/sysconfig/network-scripts/ifcfg-enp0s3
-echo "IPADDR=192.168.0.4" >> /etc/sysconfig/network-scripts/ifcfg-enp0s3
-systemctl restart network
-
-
-systemctl restart sshd
-systemctl status sshd
-netstat -tunap | grep ssh
-
-
-redirection ip router vers ip interne virtualbox
-sudo iptables -t nat -A OUTPUT -d 81.57.127.51 -j DNAT --to-destination 192.168.0.4
-
-
-curl -k https://console.sandbox.nip.io:8443/console/
-
-
-depuis le host:
-echo "192.168.0.48    console.sandbox.nip.io  console.sandbox.nip.io" >> /etc/hosts
-echo "192.168.0.48    console.apps.sandbox.nip.io  console.apps.sandbox.nip.io" >> /etc/hosts MARCHE PAS console cluster indisponible :(
-
-ok la console est inaccessible si je passe par XXX.nip.io ...
-
->passage apr un dns externe OU alors IP FIXE !
+> If you need to display all containers logs **docker ps -a | grep -v CONTAINER| awk '{system("docker logs "$1)}'**.
