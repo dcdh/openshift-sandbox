@@ -90,8 +90,23 @@ The virtual machine use enp0s3 as internal network.
 > Now doing this command **ip addr show|grep 10.0.0.11** should return **inet 10.0.0.11/24 brd 10.0.0.255 scope global noprefixroute enp0s3:1**
 > So the addresse IP **10.0.0.11** is well linked to **enp0s3:1**
 
-4.5. Run the script **install-openshift.sh**
-4.6. Answer questions with theses responses:
+5. Change default root
+
+> By default, OpenShift use the default route assigned to define master's ip. However when using a dynamic IP, OpenShift may not start after server reboot and a new ip assignment.
+> Internally, Ansible playbook use the property 'ansible_default_ipv4' to define master's ip.
+
+route add default gw 10.0.0.11
+
+FUCK route add n'est pas persistent au redemmarrage !!
+FUCK et la cela ne marche pas le ping !!! WHOUHOU je suis dans la merde
+FUCK et ce que je peux avoir une route secondaire ????
+
+> to check which route is active by default `ip -4 route get 8.8.8.8` 
+
+6. Install OpenShift
+
+6.1. Run the script **install-openshift.sh**
+6.2. Answer questions with theses responses:
 
 Domain to use: (81.57.127.51.nip.io): **10.0.0.11**
 Username: (root): **sandbox**
@@ -104,9 +119,9 @@ API Port: (8443):
 > As you can see a 'dynamic' IP (192.168.0.22) is proposed. I ensure to use the one fixed on my interface (ie: 10.0.0.11)
 > Let's Encrypt will not be installed because my IP used as domain to use is not public
 
-4.7. Wait a lot of time
+6.3. Wait a lot of time
 
-4.9. Add dns entries in host
+6.4. Add dns entries in host
 
 > I need to translate domain and sub-domain addresses represented as **sub-domain.10.0.0.11** to the virtual machine running OpenShift IP address **10.0.0.11**
 
@@ -120,7 +135,11 @@ echo "10.0.0.11       grafana-openshift-monitoring.apps.10.0.0.11 grafana-opensh
 
 > With 5gb of ram I could not install logging feature. So maybe you should add another entries in your hosts corresponding to logging web interfaces.
 
-5.0. login :)
+6.5. reboot
+
+reboot
+
+7. login :)
 
 You can login by using your browser from your host and this URL **https://console.apps.10.0.0.11**
 
