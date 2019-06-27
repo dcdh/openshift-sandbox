@@ -92,17 +92,17 @@ sysctl -w net.ipv4.ip_forward=1
 
 printf "net.ipv4.ip_forward=1\n" >> /etc/sysctl.d/30-ipforward.conf
 
-iptables -t filter -I FORWARD --in-interface vboxnet0 --out-interface wlo1 --source 192.168.56.0/24 -j ACCEPT
+iptables -t filter -I FORWARD --in-interface vboxnet0 --out-interface `wlo1` --source 192.168.56.0/24 -j ACCEPT
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
 
-iptables -t filter -I FORWARD --in-interface wlo1 --out-interface vboxnet0 --destination 192.168.56.0/24 -j ACCEPT
+iptables -t filter -I FORWARD --in-interface `wlo1` --out-interface vboxnet0 --destination 192.168.56.0/24 -j ACCEPT
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
 
-iptables -t nat -I POSTROUTING -o wlo1 -j MASQUERADE
+iptables -t nat -I POSTROUTING -o `wlo1` -j MASQUERADE
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
@@ -115,7 +115,7 @@ systemctl enable dnsmasq.service
 
 systemctl start dnsmasq.service
 
-> #### Now doing a `ping 8.8.8.8` from the Virtual Machine should return
+> #### Now doing a `ping 8.8.8.8` from the Virtual Machine should return:
 > PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
 >
 > 64 bytes from 8.8.8.8: icmp_seq=1 ttl=53 time=25.3 ms
@@ -197,8 +197,6 @@ Wait a lot of time !
     *
     $ oc login -u sandbox -p sandbox https://console.192.168.56.101:8443/
     ******
-
-
 
 ## Additional Information
 
