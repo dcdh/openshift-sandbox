@@ -21,11 +21,11 @@ Using a bare metal server will need a real dns name to make it accessible from t
 
 The version of OpenShift 3.11 under a virtual machine.
 
-**Why not install version 4.0 of OpenShift ?**
+**Why not install version 4.xx of OpenShift ?**
 
 Version 4.xx have introduced a new architecture compound by more than 1 server.
 
-This documentation is about installing a full OpenShift instance in one server.
+This documentation is about installing a full OpenShift instance (master and node) in one server.
 
 > ## References
 > [virtualbox-host-only-with-internet](https://unix.stackexchange.com/questions/383791/virtualbox-host-only-with-internet)
@@ -71,7 +71,7 @@ Add a `vboxnet0` network using theses values:
 
 > Please follow CentOS guest installation from `OpenShift installation part1`
 >
-> **/!\** Do not install Openshift by running the script `install-openshift.sh` yet.
+> #### /!\ Do not install Openshift by running the script `install-openshift.sh` yet.
 
 **Guest Network setup**
 
@@ -93,16 +93,22 @@ sysctl -w net.ipv4.ip_forward=1
 printf "net.ipv4.ip_forward=1\n" >> /etc/sysctl.d/30-ipforward.conf
 
 iptables -t filter -I FORWARD --in-interface vboxnet0 --out-interface `wlo1` --source 192.168.56.0/24 -j ACCEPT
+> Replace `wlo1` by your interface connected on internet.
+>
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
 
 iptables -t filter -I FORWARD --in-interface `wlo1` --out-interface vboxnet0 --destination 192.168.56.0/24 -j ACCEPT
+> Replace `wlo1` by your interface connected on internet.
+>
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
 
 iptables -t nat -I POSTROUTING -o `wlo1` -j MASQUERADE
+> Replace `wlo1` by your interface connected on internet.
+>
 > In my case the interface connected with internet is my wifi (wlo1).
 >
 > Use `ip route|grep default` to find your interface connected with internet.
@@ -187,6 +193,7 @@ cd installcentos
 > Let's Encrypt will not be installed because my IP used as domain to use is not public
 
 Wait a lot of time !
+Next enjoy ^^
 
     ******
     * Your console is https://console.192.168.56.101:8443
