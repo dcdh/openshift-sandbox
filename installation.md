@@ -4,6 +4,8 @@
 
 As a developer, I want to create a sandbox running OpenShift version 3.11 (last version of the 3.XX releases), in order to practice OpenShift.
 
+This sandbox must not be dependent of the dynamic network defined by the Internet Service Provider router for the connected interface.
+
 **keywords**: OpenShift 3.11, VirtualBox, CentOS 7 1810, Bare Metal Server
 
 > OpenShift is intimately linked with RedHat products like RedHat RHEL7 (enterprise grade product) or CentOS7 (OpenSource version of RHEL7);
