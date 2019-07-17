@@ -80,6 +80,8 @@ Add a `vboxnet0` network using theses values:
 
 > Now you can connect the guest virtual machine from the host by using the command `ssh root@192.168.56.101`
 
+/!\ not working if your phone modem use IPV6. You must use IPV4. See this [manual to stay in IPV4 on android 9](https://assistance.orange.fr/mobile-tablette/tous-les-mobiles-et-tablettes/depanner/probleme-avec-un-service-d-orange-internet-sms-mms-mails-cloud-tv/mms/android-9-pie-pour-google-verifier-le-parametrage-pour-l-envoi-des-mms_269983-811016)
+
 ## Host Network Configuration (on arch linux as root)
 
 cp /etc/iptables/empty.rules /etc/iptables/iptables.rules
@@ -90,7 +92,11 @@ systemctl start iptables.service
 
 sysctl -w net.ipv4.ip_forward=1
 
+sysctl -w net.ipv6.conf.all.forwarding=1
+
 printf "net.ipv4.ip_forward=1\n" >> /etc/sysctl.d/30-ipforward.conf
+
+printf "net.ipv6.conf.all.forwarding=1\n" >> /etc/sysctl.d/30-ipforward.conf
 
 iptables -t filter -I FORWARD --in-interface vboxnet0 --out-interface `wlo1` --source 192.168.56.0/24 -j ACCEPT
 > Replace `wlo1` by your interface connected on internet.
@@ -173,6 +179,16 @@ We need to translate domain and sub-domain addresses represented as **sub-domain
     docker pull quay.io/coreos/kube-state-metrics:v1.3.1 && \
     docker pull docker.io/openshift/oauth-proxy:v1.1.0 && \
     docker pull quay.io/coreos/configmap-reload:v0.0.1
+
+> ci related images
+
+    docker pull openshift/jenkins-slave-nodejs-centos7:v3.11 && \
+    docker pull openshift/jenkins-agent-maven-35-centos7:v3.11 && \
+    docker pull openshift/jenkins-slave-maven-centos7:v3.11 && \
+    docker pull openshift/jenkins-agent-nodejs-8-centos7:v3.11 && \
+    docker pull openshift/jenkins-slave-base-centos7:v3.11 && \
+    docker pull openshift/jenkins-2-centos7:v3.11
+
 
 yum install git vim telnet -y
 
