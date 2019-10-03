@@ -180,14 +180,20 @@ We need to translate domain and sub-domain addresses represented as **sub-domain
     docker pull docker.io/openshift/oauth-proxy:v1.1.0 && \
     docker pull quay.io/coreos/configmap-reload:v0.0.1
 
+> nexus related images
+
+    docker pull sonatype/nexus3:3.6.0
+
 > ci related images
+> dcdh1983/jenkins-agent-maven-35-graalvm-centos7 : https://github.com/dcdh/jenkins-agent-maven-35-graalvm-centos7.git
 
     docker pull openshift/jenkins-slave-nodejs-centos7:v3.11 && \
     docker pull openshift/jenkins-agent-maven-35-centos7:v3.11 && \
     docker pull openshift/jenkins-slave-maven-centos7:v3.11 && \
     docker pull openshift/jenkins-agent-nodejs-8-centos7:v3.11 && \
     docker pull openshift/jenkins-slave-base-centos7:v3.11 && \
-    docker pull openshift/jenkins-2-centos7:v3.11
+    docker pull openshift/jenkins-2-centos7:v3.11 && \
+    docker pull dcdh1983/jenkins-agent-maven-35-graalvm-centos7:v3.11
 
 
 yum install git vim telnet -y

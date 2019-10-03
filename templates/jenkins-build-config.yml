@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: Template
+labels:
+  template: jenkins-slave-maven-persistence-nexus-config-template
+metadata:
+  annotations:
+    tags: jenkins
+  name: jenkins-slave-config
+objects:
+  - apiVersion: v1
+    kind: "PersistentVolumeClaim"
+    metadata:
+      name: "maven-persistence"
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+  - apiVersion: v1
+    data:
+      maven-persistence-nexus: |-
+        <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+          <inheritFrom></inheritFrom>
+          <name>maven-graalvm-persistence-nexus</name>
+          <label>maven-graalvm-persistence-nexus</label>
+          <serviceAccount>jenkins</serviceAccount>
+          <nodeSelector></nodeSelector>
+          <volumes>
+            <org.csanchez.jenkins.plugins.kubernetes.volumes.PersistentVolumeClaim>
+              <mountPath>/home/jenkins/.m2/repository</mountPath>
+              <claimName>maven-persistence</claimName>
+              <readOnly>false</readOnly>
+            </org.csanchez.jenkins.plugins.kubernetes.volumes.PersistentVolumeClaim>
+          </volumes>
+          <containers>
+            <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+              <name>maven-graalvm-persistence-nexus</name>
+              <image>openshift/jenkins-slave-maven-centos7</image>
+              <privileged>false</privileged>
+              <alwaysPullImage>false</alwaysPullImage>
+              <workingDir>/tmp</workingDir>
+              <command></command>
+              <args>${computer.jnlpmac} ${computer.name}</args>
+              <ttyEnabled>false</ttyEnabled>
+              <resourceRequestCpu></resourceRequestCpu>
+              <resourceRequestMemory></resourceRequestMemory>
+              <resourceLimitCpu></resourceLimitCpu>
+              <resourceLimitMemory></resourceLimitMemory>
+              <envVars/>
+            </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+          </containers>
+          <envVars>
+            <org.csanchez.jenkins.plugins.kubernetes.PodEnvVar>
+              <key>MAVEN_MIRROR_URL</key>
+              <value>http://nexus.ci.svc:8081/repository/maven-all-public/</value>
+            </org.csanchez.jenkins.plugins.kubernetes.PodEnvVar>
+          </envVars>
+          <instanceCap>2147483647</instanceCap>
+          <idleMinutes>0</idleMinutes>
+          <slaveConnectTimeout>100</slaveConnectTimeout>
+          <annotations/>
+          <imagePullSecrets/>
+          <nodeProperties/>
+        </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+    kind: ConfigMap
+    metadata:
+      labels:
+        role: jenkins-slave
+      name: jenkins-slave
