@@ -1,5 +1,7 @@
 # OpenShift sandbox
 
+git clone https://github.com/dcdh/openshift-sandbox.git
+
 ## Main goal
 
 As a developer, I want to create a sandbox running OpenShift version 3.11 (last version of the 3.XX releases), in order to practice OpenShift.

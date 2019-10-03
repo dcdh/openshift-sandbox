@@ -36,7 +36,7 @@ objects:
           <containers>
             <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
               <name>maven-graalvm-persistence-nexus</name>
-              <image>openshift/jenkins-slave-maven-centos7</image>
+              <image>dcdh1983/jenkins-agent-maven-35-graalvm-centos7:v3.11</image>
               <privileged>false</privileged>
               <alwaysPullImage>false</alwaysPullImage>
               <workingDir>/tmp</workingDir>
