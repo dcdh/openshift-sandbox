@@ -82,7 +82,8 @@ Add a `vboxnet0` network using theses values:
 
 > Now you can connect the guest virtual machine from the host by using the command `ssh root@192.168.56.101`
 
-/!\ not working if your phone modem use IPV6. You must use IPV4. See this [manual to stay in IPV4 on android 9](https://assistance.orange.fr/mobile-tablette/tous-les-mobiles-et-tablettes/depanner/probleme-avec-un-service-d-orange-internet-sms-mms-mails-cloud-tv/mms/android-9-pie-pour-google-verifier-le-parametrage-pour-l-envoi-des-mms_269983-811016)
+> If your phone use IPV6 ensure to activate IPV6 on you guest wifi connection
+![IPV6_setup](/wifi_ipv6.png)
 
 ## Host Network Configuration (on arch linux as root)
 
