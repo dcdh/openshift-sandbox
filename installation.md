@@ -84,6 +84,8 @@ Add a `vboxnet0` network using theses values:
 
 > If your phone use IPV6 ensure to activate IPV6 on you guest wifi connection
 ![IPV6_setup](/wifi_ipv6.png)
+> On your (Android) phone ensure that IPV4 and IPV6 protocols are both used !
+![IPV4_IPV6_android_setup](/wifi_android.png)
 
 ## Host Network Configuration (on arch linux as root)
 
