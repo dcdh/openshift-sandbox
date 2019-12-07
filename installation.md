@@ -143,6 +143,25 @@ yum install -y docker-1.13.1 && systemctl start docker && systemctl enable docke
 
 > pull images used in case your connection is too slow leading to installation failure due to not enough time allowed by installation probes
 
+    docker pull docker.io/openshift/origin-cluster-monitoring-operator:v3.11 && \
+    docker pull docker.io/openshift/origin-logging-fluentd:v3.11 && \
+    docker pull docker.io/openshift/origin-logging-kibana5:v3.11 && \
+    docker pull docker.io/openshift/origin-metrics-server:v3.11 && \
+    docker pull docker.io/openshift/origin-metrics-heapster:v3.11 && \
+    docker pull docker.io/openshift/origin-metrics-hawkular-metrics:v3.11 && \
+    docker pull docker.io/openshift/origin-metrics-schema-installer:v3.11 && \
+    docker pull docker.io/openshift/origin-metrics-cassandra:v3.11 && \
+    docker pull docker.io/cockpit/kubernetes:latest && \
+    docker pull quay.io/coreos/prometheus-config-reloader:v0.23.2 && \
+    docker pull quay.io/coreos/prometheus-operator:v0.23.2 && \
+    docker pull docker.io/openshift/prometheus-alertmanager:v0.15.2 && \
+    docker pull docker.io/openshift/prometheus-node-exporter:v0.16.0 && \
+    docker pull docker.io/openshift/prometheus:v2.3.2 && \
+    docker pull docker.io/grafana/grafana:5.2.1 && \
+    docker pull quay.io/coreos/kube-rbac-proxy:v0.3.1 && \
+    docker pull quay.io/coreos/etcd:v3.2.22 && \
+    docker pull quay.io/coreos/kube-state-metrics:v1.3.1 && \
+    docker pull docker.io/openshift/oauth-proxy:v1.1.0 && \
     docker pull docker.io/openshift/origin-control-plane:v3.11 && \
     docker pull docker.io/openshift/origin-control-plane:v3.11.0 && \
     docker pull docker.io/openshift/origin-pod:v3.11 && \
