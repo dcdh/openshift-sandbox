@@ -63,8 +63,8 @@ Add a `vboxnet0` network using theses values:
 #### Characteristics
 
 1. **Hard drive** 80Go
-1. **CPU** 2
-1. **Memory** at least 4096Mo
+1. **CPU** 4
+1. **Memory** at least 17Go
 1. **Network**
 
 ![virtualBox_interface_1](/virtualbox_setup/virtualBox_interface_1.png)
@@ -137,17 +137,9 @@ systemctl start dnsmasq.service
 >
 > 64 bytes from 8.8.8.8: icmp_seq=1 ttl=53 time=25.3 ms
 
-We need to translate domain and sub-domain addresses represented as **sub-domain.192.168.56.101** to the virtual machine running OpenShift IP address **192.168.56.101**
-
-    echo "192.168.56.101  console.192.168.56.101       console.192.168.56.101" >> /etc/hosts
-    echo "192.168.56.101  console.apps.192.168.56.101  console.apps.192.168.56.101" >> /etc/hosts
-    echo "192.168.56.101  prometheus-k8s-openshift-monitoring.apps.192.168.56.101 prometheus-k8s-openshift-monitoring.apps.192.168.56.101" >> /etc/hosts
-    echo "192.168.56.101  alertmanager-main-openshift-monitoring.apps.192.168.56.101 alertmanager-main-openshift-monitoring.apps.192.168.56.101" >> /etc/hosts
-    echo "192.168.56.101  grafana-openshift-monitoring.apps.192.168.56.101 grafana-openshift-monitoring.apps.192.168.56.101" >> /etc/hosts
-> Keep in mind that the dns entries in the host must be updated when exposing a new application route from the virtual machine running OpenShift.
-> With 5gb of ram I could not install logging feature. So maybe you should add another entries in your hosts corresponding to logging web interfaces.
-
 ### Guest Virtual Machine installation
+
+yum install -y docker-1.13.1 && systemctl start docker && systemctl enable docker
 
 > pull images used in case your connection is too slow leading to installation failure due to not enough time allowed by installation probes
 
@@ -197,19 +189,17 @@ We need to translate domain and sub-domain addresses represented as **sub-domain
     docker pull openshift/jenkins-slave-maven-centos7:v3.11 && \
     docker pull openshift/jenkins-agent-nodejs-8-centos7:v3.11 && \
     docker pull openshift/jenkins-slave-base-centos7:v3.11 && \
-    docker pull openshift/jenkins-2-centos7:v3.11 && \
-    docker pull dcdh1983/jenkins-agent-maven-35-graalvm-centos7:v3.11
-
+    docker pull openshift/jenkins-2-centos7:v3.11
 
 yum install git vim telnet -y
 
-git clone https://github.com/gshipley/installcentos/
+git clone https://github.com/okd-community-install/installcentos
 
 cd installcentos
 
 ./install-openshift.sh
 
-    Domain to use: (81.57.127.51.nip.io): 192.168.56.101
+    Domain to use: (81.57.127.51.nip.io): 192.168.56.101.nip.io
     Username: (root): sandbox
     Password: (password): sandbox
     OpenShift Version: (3.11): 
@@ -223,7 +213,7 @@ Wait a lot of time !
 Next enjoy ^^
 
     ******
-    * Your console is https://console.192.168.56.101:8443
+    * Your console is https://console.192.168.56.101.nip.io:8443
     * Your username is sandbox 
     * Your password is sandbox 
     *
