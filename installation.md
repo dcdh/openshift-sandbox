@@ -162,6 +162,8 @@ yum install -y docker-1.13.1 && systemctl start docker && systemctl enable docke
     docker pull quay.io/coreos/etcd:v3.2.22 && \
     docker pull quay.io/coreos/kube-state-metrics:v1.3.1 && \
     docker pull docker.io/openshift/oauth-proxy:v1.1.0 && \
+    docker pull docker.io/openshift/origin-logging-elasticsearch5:v3.11 && \
+    docker pull docker.io/openshift/origin-logging-kibana5:v3.11 && \
     docker pull docker.io/openshift/origin-control-plane:v3.11 && \
     docker pull docker.io/openshift/origin-control-plane:v3.11.0 && \
     docker pull docker.io/openshift/origin-pod:v3.11 && \
