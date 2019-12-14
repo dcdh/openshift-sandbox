@@ -14,8 +14,6 @@ oc set resources dc/nexus --limits=cpu=1,memory=1Gi --requests=cpu=200m,memory=1
 
 ## Jenkins
 
-oc process -f templates/jenkins-build-config.yml | oc create -f - -n ci
-
 oc new-app -e INSTALL_PLUGINS=ssh-agent:1.15 jenkins-persistent -l app=jenkins -p MEMORY_LIMIT=1Gi -n ci
 
 > http://nexus-ci.apps.192.168.56.101.nip.io/
