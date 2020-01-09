@@ -214,7 +214,7 @@ yum install -y docker-1.13.1 && systemctl start docker && systemctl enable docke
 
 yum install git vim telnet -y
 
-git clone https://github.com/okd-community-install/installcentos
+git clone https://github.com/dcdh/installcentos.git
 
 cd installcentos
 
