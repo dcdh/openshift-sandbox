@@ -147,6 +147,8 @@ sudo yum install -y docker-1.13.1
 2. sudo usermod -aG docker $USER
 3. newgrp docker
 
+/!\ if you want to avoid doing `newgrp docker` when opening a new terminal, just **reboot** the computer.
+
 sudo systemctl start docker && systemctl enable docker
 
 > pull images used in case your connection is too slow leading to installation failure due to not enough time allowed by installation probes
