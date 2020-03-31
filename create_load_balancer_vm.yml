@@ -1,0 +1,258 @@
+---
+- name: Create lb virtual machine
+  hosts: localhost
+  vars:
+    vm_name: lb
+    images_path: "/home/{{ ansible_user_id }}/.okd/images"
+    vm_path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
+    boot_init_iso_path: "{{ vm_path }}/boot-init.iso"
+    centos7_cloud_image_name: CentOS-7-x86_64-GenericCloud-1907.qcow2
+    centos7_cloud_image_url: "https://cloud.centos.org/centos/7/images/{{ centos7_cloud_image_name }}"
+    mac: "52:54:00:00:05:57"
+    ip: "10.0.5.57"
+    bridge: virbr-okd-cl
+    ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+  tasks:
+    - name: Get vms defined
+      virt:
+        command: info
+        uri: "qemu:///session"
+      register: info
+    - name: Create {{ vm_name }} virtual machine
+      block:
+        - name: Create directories
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "{{ ansible_user_id }}"
+            group: "{{ ansible_user_id }}"
+          with_items:
+            - "{{ images_path }}"
+            - "{{ vm_path }}"
+        - name: Check if centos 7 cloud image is present
+          stat:
+            path: "{{ images_path }}/{{ centos7_cloud_image_name }}"
+          register: centos7_cloud_image
+        - name: Download centos 7 cloud image
+          become: no
+          get_url:
+            url: "{{ centos7_cloud_image_url }}"
+            dest: "{{ images_path }}"
+            sha256sum: "520d01c2f2e1ed24cb2f15a4325aa30773930a2961b5484a68cf11b4a415c512"
+          when: centos7_cloud_image.stat.exists == False
+        - name: Copy centos7 cloud image from images to {{ vm_name }} vm
+          copy:
+            src: "{{ images_path }}/{{ centos7_cloud_image_name }}"
+            dest: "{{ vm_path }}/{{ centos7_cloud_image_name }}"
+            owner: "{{ ansible_user_id }}"
+            group: "{{ ansible_user_id }}"
+            force: no
+        - name: check if metada-data file is defined
+          stat:
+            path: "{{ vm_path }}/meta-data"
+          register: meta_data
+        - name: Create meta-data file
+          copy:
+            dest: "{{ vm_path }}/meta-data"
+            content: |
+              instance-id: {{ vm_name }}
+              local-hostname: {{ vm_name }}
+          when: meta_data.stat.exists == False
+        - name: check if user-data file is defined
+          stat:
+            path: "{{ vm_path }}/user-data"
+          register: user_data
+        - name: Create user-data file
+          copy:
+            dest: "{{ vm_path }}/user-data"
+            content: |
+              #cloud-config
+
+              # Hostname management
+              preserve_hostname: False
+              hostname: {{ vm_name }}
+              fqdn: {{ vm_name }}.ocp4-cluster-001.sandbox.okd
+              manage_etc_hosts: true
+
+              # Users
+              users:
+                  - default
+                  - name: {{ ansible_user_id }}
+                    groups: ['wheel']
+                    shell: /bin/bash
+                    sudo: ALL=(ALL) NOPASSWD:ALL
+                    ssh-authorized-keys:
+                      - {{ lookup('file', ssh_public_key) }}
+
+              # Configure where output will go
+              output:
+                all: ">> /var/log/cloud-init.log"
+
+              # configure interaction with ssh server
+              ssh_genkeytypes: ['ed25519', 'rsa']
+
+              # Install my public ssh key to the first user-defined user configured
+              # in cloud.cfg in the template (which is centos for CentOS cloud images)
+              ssh_authorized_keys:
+                - {{ lookup('file', ssh_public_key) }}
+
+              timezone: US/Eastern
+
+              packages:
+                - haproxy
+                - bind-utils
+
+              write_files:
+                - content: |
+                    # Global settings
+                    #---------------------------------------------------------------------
+                    global
+                        maxconn     20000
+                        log         /dev/log local0 info
+                        chroot      /var/lib/haproxy
+                        pidfile     /var/run/haproxy.pid
+                        user        haproxy
+                        group       haproxy
+                        daemon
+
+                        # turn on stats unix socket
+                        stats socket /var/lib/haproxy/stats
+
+                    #---------------------------------------------------------------------
+                    # common defaults that all the 'listen' and 'backend' sections will
+                    # use if not designated in their block
+                    #---------------------------------------------------------------------
+                    defaults
+                        mode                    http
+                        log                     global
+                        option                  httplog
+                        option                  dontlognull
+                        option http-server-close
+                        option forwardfor       except 127.0.0.0/8
+                        option                  redispatch
+                        retries                 3
+                        timeout http-request    10s
+                        timeout queue           1m
+                        timeout connect         10s
+                        timeout client          300s
+                        timeout server          300s
+                        timeout http-keep-alive 10s
+                        timeout check           10s
+                        maxconn                 20000
+
+                    listen stats
+                        bind :9000
+                        mode http
+                        stats enable
+                        stats uri /
+
+                    frontend ocp4_k8s_api_fe
+                        bind :6443
+                        default_backend ocp4_k8s_api_be
+                        mode tcp
+                        option tcplog
+
+                    backend ocp4_k8s_api_be
+                        balance roundrobin
+                        mode tcp
+                        server      bootstrap 10.0.5.58:6443 check
+                        server      control-plane-0 10.0.5.59:6443 check
+
+                    frontend ocp4_machine_config_server_fe
+                        bind :22623
+                        default_backend ocp4_machine_config_server_be
+                        mode tcp
+                        option tcplog
+
+                    backend ocp4_machine_config_server_be
+                        balance roundrobin
+                        mode tcp
+                        server      bootstrap 10.0.5.58:22623 check
+                        server      control-plane-0 10.0.5.59:22623 check
+
+                    frontend ocp4_http_ingress_traffic_fe
+                        bind :80
+                        default_backend ocp4_http_ingress_traffic_be
+                        mode tcp
+                        option tcplog
+
+                    backend ocp4_http_ingress_traffic_be
+                        balance roundrobin
+                        mode tcp
+                        server      compute-0 10.0.5.62:80 check
+
+                    frontend ocp4_https_ingress_traffic_fe
+                        bind :443
+                        default_backend ocp4_https_ingress_traffic_be
+                        mode tcp
+                        option tcplog
+
+                    backend ocp4_https_ingress_traffic_be
+                        balance roundrobin
+                        mode tcp
+                        server      compute-0 10.0.5.62:443 check
+                  path: /run/myconf/haproxy.cfg
+
+              # The message is located in /var/log/cloud-init.log
+              final_message: "The system is finally up, after $UPTIME seconds"
+
+              # Remove cloud-init when finished with it
+              runcmd:
+                - systemctl stop network && systemctl start network
+                - systemctl disable cloud-init.service
+                - /bin/cp /run/myconf/haproxy.cfg /etc/haproxy/haproxy.cfg
+                - setsebool -P haproxy_connect_any on
+                - systemctl start haproxy
+                - systemctl enable haproxy
+          when: user_data.stat.exists == False
+        - name: Create boot init iso
+          shell:
+            cmd: genisoimage -output {{ boot_init_iso_path }} -volid cidata -joliet -r {{ vm_path }}/user-data {{ vm_path }}/meta-data
+        - name: Define {{ vm_name }} virtual machine
+          virt:
+            command: define
+            name: "{{ vm_name }}"
+            xml: '{{ lookup("template", "templates/vm.xml.j2") }}'
+            uri: "qemu:///session"
+          vars:
+            name: "{{ vm_name }}"
+            memory: 1024
+            vcpus: 1
+            disk_file: "{{ vm_path }}/{{ centos7_cloud_image_name }}"
+            boot_init_iso: "{{ boot_init_iso_path }}"
+            vm_mac: "{{ mac }}"
+            vm_bridge: "{{ bridge }}"
+        - name: Start {{ vm_name }} vm
+          virt:
+            command: start
+            name: "{{ vm_name }}"
+            autostart: yes
+            uri: "qemu:///session"
+        - name: Wait for port 22
+          wait_for:
+            host: "{{ ip }}"
+            port: 22
+            state: drained
+            delay: 10
+        - name: Add {{ vm_name }} host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+          shell: |
+            while [ -z "$knownHost" ]
+            do
+              sleep 1
+              knownHost=$(ssh-keyscan -t ssh-rsa {{ ip }})
+            done
+            echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
+          args:
+            executable: /bin/bash
+        - name: Remove boot-init.iso from {{ vm_name }} vm
+          shell:
+            cmd: virsh change-media {{ vm_name }} --path {{ boot_init_iso_path }} --eject --config
+        - name: Wait until {{ vm_name }} vm is ready
+          shell: |
+            while ! ssh centos@{{ ip }} 'sudo grep -nri "The system is finally up" /var/log/cloud-init.log' > /dev/null
+            do
+              sleep 1
+            done
+          args:
+            executable: /bin/bash
+      when: info.lb is not defined

@@ -1,0 +1,123 @@
+---
+- name: Install prerequisite okd infrastructure
+  hosts: localhost
+  vars:
+    installer_path: "/home/{{ ansible_user_id }}/.okd"
+    okd_version: "4.4.0-0.okd-2020-03-28-092308"
+    images_path: "/home/{{ ansible_user_id }}/.okd/images"
+    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
+    fedora_coreos_cloud_image_name_archive: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2.xz"
+    vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+    ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+    pull_secret: "/home/damien/Téléchargements/pull-secret" # FIXME
+  tasks:
+    - name: Update / Install needed package for qemu following fail to use fw_cfg https://www.spinics.net/lists/centos/msg166715.html
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - centos-release-qemu-ev
+          - qemu-kvm-ev
+    - name: Download okd client
+      get_url:
+        url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-client-linux-{{ okd_version }}.tar.gz
+        dest: "{{ installer_path }}"
+    - name: Extract okd client
+      unarchive:
+        src: "{{ installer_path }}/openshift-client-linux-{{ okd_version }}.tar.gz"
+        dest: "{{ installer_path }}"
+    - name: Copy kubectl and oc to /usr/bin
+      copy:
+        src: "{{ installer_path }}/{{ item }}"
+        dest: "/usr/bin/{{ item }}"
+      with_items:
+        ["kubectl","oc"]
+      become: true
+      become_user: root
+      mode: u+rwx,g+wxx,o+rwx
+    - name: Download okd installer
+      get_url:
+        url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-install-linux-{{ okd_version }}.tar.gz
+        dest: "{{ installer_path }}"
+    - name: Extract okd installer
+      unarchive:
+        src: "{{ installer_path }}/openshift-install-linux-{{ okd_version }}.tar.gz"
+        dest: "{{ installer_path }}"
+    - name: Check if fedora coreos cloud image is present
+      stat:
+        path: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
+      register: fedora_coreos_cloud_image
+    - name: Download fedora coreos cloud image
+      become: no
+      get_url:
+        url: "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200310.3.0/x86_64/{{ fedora_coreos_cloud_image_name_archive }}"
+        dest: "{{ images_path }}"
+        sha256sum: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
+      when: fedora_coreos_cloud_image.stat.exists == False
+    - name: Unarchive fedora cloud image
+      shell:
+        cmd: xz -v -d {{ images_path }}/{{ fedora_coreos_cloud_image_name_archive }}
+      when: fedora_coreos_cloud_image.stat.exists == False
+    - name: Create install-config.yaml
+      copy:
+        dest: "{{ installer_path }}/{{ item }}"
+        content: |
+          ---
+          apiVersion: v1
+          baseDomain: sandbox.okd
+          compute:
+          - hyperthreading: Enabled
+            name: worker
+            platform: {}
+            replicas: 0
+          controlPlane:
+            hyperthreading: Enabled
+            name: master
+            platform: {}
+            replicas: 1
+          metadata:
+            creationTimestamp: null
+            name: ocp4-cluster-001
+          networking:
+            clusterNetwork:
+            - cidr: 10.128.0.0/14
+              hostPrefix: 23
+            networkType: OpenShiftSDN
+            serviceNetwork:
+            - 172.30.0.0/16
+          platform:
+            none: {}
+          pullSecret: '{{ lookup('file', pull_secret) }}'
+          sshKey: '{{ lookup('file', ssh_public_key) }}'
+      with_items:
+        ["install-config.yaml","install-config.yaml.bak"]
+    - name: Create manifests
+      shell:
+        cmd: "{{ installer_path }}/openshift-install create manifests --dir {{ installer_path }}"
+      args:
+        executable: /bin/bash
+    - name: Disable master schedulable
+      lineinfile:
+        path: "{{ installer_path }}/manifests/cluster-scheduler-02-config.yml"
+        regexp: "  mastersSchedulable"
+        line: "  mastersSchedulable: false"
+    - name: Create ignition configs files
+      shell:
+        cmd: "{{ installer_path }}/openshift-install create ignition-configs --dir {{ installer_path }}"
+      args:
+        executable: /bin/bash
+    - name: Add {{ ansible_user_id }} as user in bootstrap vm
+      shell:
+        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/bootstrap.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
+    - name: Add {{ ansible_user_id }} as user in worker vm
+      shell:
+        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/worker.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
+    - name: Add {{ ansible_user_id }} as user in control plane vm
+      shell:
+        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/master.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
+    - name: Copy ignitions files to be accessible to KVM virtual machines
+      copy:
+        src: "{{ installer_path }}/{{ item }}"
+        dest: "/tmp/{{ item }}"
+      with_items:
+        ["bootstrap.ign","worker.ign","master.ign"]

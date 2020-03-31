@@ -1,0 +1,23 @@
+<network>
+    <name>okd-cluster</name>
+    <forward mode='nat'>
+        <nat>
+            <port start='1024' end='65535'/>
+        </nat>
+    </forward>
+    <bridge name='virbr-okd-cl' stp='on' delay='0'/>
+    <mac address='52:54:00:00:05:00'/>
+    <domain name='ocp4-cluster-001.sandbox.okd' localOnly='no'/>
+    <dns>
+        <forwarder addr='10.0.6.10'/>
+    </dns>
+    <ip address='10.0.5.1' netmask='255.255.255.0'>
+        <dhcp>
+            <range start='10.0.5.10' end='10.0.5.254'/>
+            <host mac='52:54:00:00:05:57' name='lb.ocp4-cluster-001.sandbox.okd' ip='10.0.5.57'/>
+            <host mac='52:54:00:00:05:59' name='control-plane-0.ocp4-cluster-001.sandbox.okd' ip='10.0.5.59'/>
+            <host mac='52:54:00:00:05:62' name='compute-0.ocp4-cluster-001.sandbox.okd' ip='10.0.5.62'/>
+            <host mac='52:54:00:00:05:58' name='bootstrap.ocp4-cluster-001.sandbox.okd' ip='10.0.5.58'/>
+        </dhcp>
+    </ip>
+</network>

@@ -1,0 +1,142 @@
+Client tools for OpenShift
+--------------------------
+
+These archives contain the client tooling for [OpenShift](https://docs.openshift.com).
+
+To verify the contents of this directory, use the 'gpg' and 'shasum' tools to
+ensure the archives you have downloaded match those published from this location.
+
+The openshift-install binary has been preconfigured to install the following release:
+
+---
+
+Name:      4.4.0-0.okd-2020-03-27-024151
+Digest:    sha256:447d94529d2d451ed4486b2204ae79640136ad6e27d66dd12b31fc09b2a63923
+Created:   2020-03-27T02:44:36Z
+OS/Arch:   linux/amd64
+Manifests: 415
+
+Pull From: registry.svc.ci.openshift.org/origin/release@sha256:447d94529d2d451ed4486b2204ae79640136ad6e27d66dd12b31fc09b2a63923
+
+Release Metadata:
+  Version:  4.4.0-0.okd-2020-03-27-024151
+  Upgrades: <none>
+
+Component Versions:
+  kubernetes 1.17.1         
+  machine-os 31.20200325.20 Fedora CoreOS
+
+Images:
+  NAME                                           PULL SPEC
+  aws-machine-controllers                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:2a39cd7f86fd2ecc98d65e0a84c93d8263ecf31aafb3d49b138a84192301f092
+  azure-machine-controllers                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:81939c4826f3f497833b0761d42ad2e611f7e9180a9117a97ae7f4c78f1fe254
+  baremetal-installer                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:68670db706cb02f64e57f34643df4d62b20ba1aa08100077c45533799d72eaba
+  baremetal-machine-controllers                  registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  baremetal-operator                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  baremetal-runtimecfg                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:ecdbba18b3a4575af45509048455a268e979f693341443ba942c152ea3dfaf49
+  branding                                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:d112c2c077ad6d1c80f16a93226adbb9d88a8c26d8b0ddac4ca699d11e24f647
+  cli                                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8405a909473c93a51076d0c70f82c9892fb5dc8474ae15d5bdb6a00018e0075f
+  cli-artifacts                                  registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:7fb8e76f764d70ceecdc66dd053e4189d46fbe70946044c44918d9940a2633f7
+  cloud-credential-operator                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:69fa3062f468292f01566f2cb925d36863cfbe3ccfd0a3dbe46bb2e26b0337e8
+  cluster-authentication-operator                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:41166e4dcdb7d1fe8d5317dc3c2c201fe103d14a19778cac5da2592d10599721
+  cluster-autoscaler                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:11e29837ccd0d64cfb19091cf56008730ddc86d6620b3aa889bd9c2014335117
+  cluster-autoscaler-operator                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:59b1110c495834bfe18c9889c47129f41bd58eb12d805f003d54e81b0ad6d918
+  cluster-bootstrap                              registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:e80f6486d558776d8b331d7856f5ba3bbaff476764b395e82d279ce86c6bb11d
+  cluster-config-operator                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:5d34fe2831513a4388362583ab6ab6d856aeb12907250f8432824753a6437a01
+  cluster-csi-snapshot-controller-operator       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:c2a9a87379cb935bd4a4c90686407802e0eab4c0b90e0461e95a985c0bcb26a2
+  cluster-dns-operator                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:ff233dcd19fa2467fb0e7446c457f829eae9b1b37eccd75e2bb26ac52972bd51
+  cluster-etcd-operator                          registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:4001104492ffe03d86f573f7cc89f16683cdccd1d86f4ea0d21bc401bac2a692
+  cluster-image-registry-operator                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:116f9a64268036c6fdfa35ef51f0e7bbc5abe200e2fac792e9674b1cea7671ac
+  cluster-ingress-operator                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:b05542871710fb7af17cdb4dbc49a951cfb727d7e4242d73efb5289bb3b385bb
+  cluster-kube-apiserver-operator                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:fd23da11030623abd6f9f2c730e856e73ba9c7da3b447c6990ee852132af46dd
+  cluster-kube-controller-manager-operator       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:f3130930b6745b8fd481c090103f3d75492f9728f58c331f5bd8172464911c43
+  cluster-kube-scheduler-operator                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:18d124f9a553efd8a50a5beb4ec76aa58cc3a2d5f45598893dc85c97f081c6a8
+  cluster-kube-storage-version-migrator-operator registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:972af34c5eb404edb7048b9071775327f51e6196cb4a6cd0e3544fa4f022ffe2
+  cluster-machine-approver                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:15b26a88c1d225efb7c62126bb55f0604ee49f5bc6e54eafca7f48f0e88b8218
+  cluster-monitoring-operator                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:35aafd601da44f8c39062fb9c5a5c21f420a5cbc1dfa8f5b9a80827ddd68927f
+  cluster-network-operator                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:c11a2f8d7aef45ae58c550bd40b44e14fca1ec86aaa161616996412d0b16c71f
+  cluster-node-tuned                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:1e23f784aafacbb7b7671b9b9e7af72efbc6bdbae42c0d8ac33f5658f51b070c
+  cluster-node-tuning-operator                   registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:d9070ce78d5bb44255c90e74110e5ffc606adf7f8c61186ac74ca386882fae35
+  cluster-openshift-apiserver-operator           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:819beecb79c15b080a9cba67a44f276e22b8f267799cbd118011851af0e75dae
+  cluster-openshift-controller-manager-operator  registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:d38661bbd098219d314c04fbf27b124915f6bb25995fff308b62ef40e9665b6a
+  cluster-policy-controller                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:e8155385777b43c6ad1f225ec8d57b8898a571ce633e71bf257d45d67a9abb92
+  cluster-samples-operator                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:fafac1a76b2a42956f5c6d06b88d4d6653af8001f006a996155ec45403f41590
+  cluster-storage-operator                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:92e76e6ba72ba01decfd128856bafd7a93dc722fed929735fa74d43fc3845f3b
+  cluster-svcat-apiserver-operator               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:bd424eb7b7e2408165636bf597a98bf1b7da5eb896e6d81e5cbf5d984ec0a576
+  cluster-svcat-controller-manager-operator      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8f1fd27114eadcdeb86b1175e2557448e45276118c4ce906444fbbe5b0250943
+  cluster-update-keys                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:7b0812c67a584309ce055a7dc00a4852bf801f3c5068ef63ade3de9993a4c22b
+  cluster-version-operator                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:69eeb4c69b035e93a0585541a76ef5991712b1d1c498e13f4809349cd1943616
+  configmap-reloader                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:5a80db4af2259ef884bfbcabb14d4938cd6c20a7fbad141b914400ef33cf8523
+  console                                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8e47cf46ed255ca1ed324b0bb97a615ddd81324c5d5ca6acc84b23e3a9ef14bf
+  console-operator                               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:49dca4d9d78082f52dc4693a7b99add7e3256cde78eeb14418496e47017ed492
+  container-networking-plugins                   registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:0bf6503fa80d9ce976a995dcf9b2b01927b919ae47111e36d063d28af6276974
+  coredns                                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:cd54d1f80d0672638442ffc9076e581c16f6189934deff5dbd50afb9d2a63757
+  csi-snapshot-controller                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:27cf2098b7dbb563536c5d59752b117c99baa5a97bb30be7a585874863c13d6a
+  deployer                                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:c33e6efdc7f47a8e952d2c993f76af51f01bcfe57e03a77bb970c7e186b3af4b
+  docker-builder                                 registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:30512b4dcc153cda7e957155f12676842a2ac2567145242d18857e2c39b93e60
+  docker-registry                                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:9dd0e622153b441f50f201ed98c92f62d030884583ac6abda5fb41d5645c8b2e
+  etcd                                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:5b25b115fc463152998c0b55f07d7aa3d4a15f5167f77b9dd976ff243f478278
+  gcp-machine-controllers                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:153f135b6e0719217d6798eff7328a87027604442afe2768caaead1e2dae6247
+  grafana                                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:9cbe5048f0dd799171320ba7e1e83f3cddf2956282a7665e448768eaffd21ecf
+  haproxy-router                                 registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:a00e1f0792908c6f9d41a9407e05da36e78a9be8594330f982689f444c382e82
+  hyperkube                                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:4392b2a41cc6873d0b1c41530b2a817b76737000b5a6fe4d08af91b0943a6580
+  insights-operator                              registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:c7477458411085dc660e598881b9d9edd1eab5650a9551db4cfc80337ac6e5b0
+  installer                                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8e73bc44f60c68ec07a6b98081f861c7de06cff49c369d11933e4dacc54da5ec
+  installer-artifacts                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:ba90e493f61b859026807f4b31182d1afd1ee93b2f53578ac9f84089b72675b1
+  ironic                                         registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  ironic-hardware-inventory-recorder             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:55fcc7142bcc34f208bf7a69237e6bae732206490dbdf25e93fcb2247e573625
+  ironic-inspector                               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  ironic-ipa-downloader                          registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  ironic-machine-os-downloader                   registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  ironic-static-ip-manager                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:227fd1bb9185e667de520c3428e07c2a3b19f47a30f3770a06611d4d9d1901a4
+  jenkins                                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:84adf8da7f1c858de02f31f2e38f6a60e805090c6a476390c691a71415700ef4
+  jenkins-agent-maven                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:68e224cd555e20d10b74f06577d0dcd9347f2e55beac37ef1232ded3afea4020
+  jenkins-agent-nodejs                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:0f79b3e519d192c6a5c481d452328e20c3698ef58296d978d5f78f96ccee8b82
+  k8s-prometheus-adapter                         registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:12bac47c71cb7ef36b6ee7b78e0476fbfb8a67bbf61ac42c461c17c98ac850a6
+  keepalived-ipfailover                          registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:2a8ef3288162925ad6ff20a440b66046c067cf20c41d5b814004d13a0ececfe1
+  kube-client-agent                              registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:801b64e523315d208a4cbb513a53558a5984630603709e15997de19ca83a14ad
+  kube-etcd-signer-server                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8755e700accb5b6d92fd7d2c7b7a6252ed62f843f06fc31812b415a0ac47e0e1
+  kube-proxy                                     registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:bb7f85dd7923b3c3eceb31114ec77d152dac4bf391a20780458144017e86fc54
+  kube-rbac-proxy                                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:4da76173cdd5d8699be46fcaba2c5911f83e9f2dc33b2c47768fda2df5415f1c
+  kube-state-metrics                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:db5ab8e8904d7867a714d08578746ecc867456bc339c79e56546866599766229
+  kube-storage-version-migrator                  registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:154e22e58ac70907207106b431629cf43f7f771b230df438143e18f6a6781a58
+  kuryr-cni                                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:509215475796b5c652f3b25399f38f3303365af1547c691a06add1022f48466d
+  kuryr-controller                               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:78c5e0895ae1262ab834a821dcd638d2241db6a581408023507c8b88573bdc01
+  libvirt-machine-controllers                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:b9d78a6300ae7d414aa2e4cb3353416d1c12c28ca2fb4b8874ad23c2937e4ccc
+  local-storage-static-provisioner               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:873e4138f9c01976cc6c95a9390d47b0ab235e743f00ae2f1fa95835af6f8663
+  machine-api-operator                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:6dd0044bfeef4a83ba44a61005b07e7fcd8253a807879e87abf7b047f72ac828
+  machine-config-operator                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:ae41e20dc2f1a4e0559191286c675adc6238db5635ec77a37ad6d7b3e3fa264c
+  machine-os-content                             registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:f22ca912eb70a6aa8cc889a0df6ef3ca8e67db9b7204869fe3b333f09f6aa473
+  mdns-publisher                                 registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:e9e19656c3606b99aec6563426f0fedb2d7405b48fe108d9a58b88168709b0a2
+  multus-admission-controller                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:48fb3fae513be94f37d068506a2fb3553de055bd957524c3d5cd06c3ab63dc71
+  multus-cni                                     registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:79e4346edfd48b9310e8e65126520868b366504a130415daaa487437a17f2a2c
+  multus-route-override-cni                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:881fb4028fec3fc027980e821307bfd7afbc0587a8d6e597a9243e60163c3569
+  multus-whereabouts-ipam-cni                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:2cc79c246065854375c247757464f13e32e871901cdc36d95f6118db3cd62a5b
+  must-gather                                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:a273f5ac7f1ad8f7ffab45205ac36c8dff92d9107ef3ae429eeb135fa8057b8b
+  oauth-apiserver                                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:444be72589abd150e048f5008c819c3c4527bf4197bb93bbdeb2f012e80e495c
+  oauth-proxy                                    registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:0f7a4323b2f2ef2343cc44858bc8f88fdf5ad7a61a037d59072557e7afaed415
+  oauth-proxy-samples                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:0656318cefa7961a1333b9de440fcc526ca76065f855a7a3082dc35d21be134f
+  oauth-server                                   registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:30381dcfddb506e6704cd19967c8774de30b701894788423c657f1d87f915b17
+  openshift-apiserver                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:3008b05ae0a3a7b38b77b281e60bb972d5b6d80883b300addc5e966aeb83138a
+  openshift-controller-manager                   registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:22b1cc34d5370882e4d527b53fbf828239047c6d3bff3544d500cec80d0681c4
+  openshift-state-metrics                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:cab7b3add9e14e41c137081b1eb3ac0fc43b4df7682fff1442d8f7fbf2415477
+  openstack-machine-controllers                  registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:de24dd488f60c7cbfac81b9587686d0fe3e4612178a4b8a4fb26a34c724b7eec
+  operator-lifecycle-manager                     registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:2248d2606c161d0442c99adfc608e2443e015fc7fa33c5f7382446ecf68e21d5
+  operator-marketplace                           registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:3480cec3290801b92136deea676bb350bf1cd480f1ca2c82f1cb5f5fa822d217
+  operator-registry                              registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:14b75c4e4f7878f954f7f60233833f3356d99a51c5e08960b673da29d74f7751
+  ovirt-machine-controllers                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:fda4fccbed0a5be00d0d04459a49b21714a0e8240037a9951096bd8dac421eb5
+  ovn-kubernetes                                 registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:e60d74ffe7b48fa38e91f22ecf5ff37f18b26493fb4dfb3500fcfe5afdd16599
+  pod                                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:6e848b9eb42cd4a009b3f02518b3699cbc12d5f84fa2737084c7b73df4f5f5af
+  prom-label-proxy                               registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:8d83284334b9e4d5b25b380ff6b29c27caa1a0234cff00e8eddb32b45f25b63b
+  prometheus                                     registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:5af0373659974782379d90d9a174352dd8f85cb7327cc48ef36cae4e8ba5903f
+  prometheus-alertmanager                        registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:25bed531ccb0ff16ce19b927265f03cb9b2d572caa224ef302002269e925d83c
+  prometheus-config-reloader                     registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:deacbd618b3c037cc8c99a83db2c2a1053db517b0a0bfdfdeb309591559c3eea
+  prometheus-node-exporter                       registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:c199e7353642ed1a4237416055a75b0e415034c7ec48bbc8ae8d12b72552f819
+  prometheus-operator                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:ec28b9dc5ad9184d0d70b85e5bc618c809084b293cbc57c215bf845bf7147b2b
+  sdn                                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:42670e6c5bed601a38cd505e7c1b33c37bab0b55f0647b8e27113c1689cbe100
+  service-ca-operator                            registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:363c11f87a66fba16a89225cfb09f09ee1f65ae2af2f7f3c23209ab60f7060b2
+  service-catalog                                registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:24121dc11c9d253da0b1cf337b6d5ceeaa8ccd25bb3d7dd7341480360bb87551
+  telemeter                                      registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:36ef75d2376569f0f249cbb152a5ab2efbdf4798f902cb33d63e85df8bb643ee
+  tests                                          registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:308f7ab2a14da09dcbc727eb5a2547ba037a9dfe72cd11a41dabd7d9271e0507
+  thanos                                         registry.svc.ci.openshift.org/origin/4.4-2020-03-27-024151@sha256:156ee3923fa70e7bd3b7a173f0e7dc7d9fd50dcc0216b1fefc9ed324f34b07f8
+

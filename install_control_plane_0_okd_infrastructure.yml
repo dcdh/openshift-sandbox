@@ -1,0 +1,57 @@
+#---
+#- name: Install control plane 0 okd infrastructure
+#  hosts: localhost
+#  vars:
+#    images_path: "/home/{{ ansible_user_id }}/.okd/images"
+#    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
+#    vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+#  tasks:
+#    - name: Create worker_0 virtual machine directory
+#      file:
+#        path: "{{ vms_path }}/worker_0"
+#        state: directory
+#        owner: "{{ ansible_user_id }}"
+#        group: "{{ ansible_user_id }}"
+#    - name: Copy fedora coreos cloud image from images to worker_0 vm
+#      copy:
+#        src: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
+#        dest: "{{ vms_path }}/worker_0/{{ fedora_coreos_cloud_image_name }}"
+#        owner: "{{ ansible_user_id }}"
+#        group: "{{ ansible_user_id }}"
+#        force: no
+#    - name: Define worker_0 virtual machine
+#      virt:
+#        command: define
+#        name: "worker_0"
+#        xml: '{{ lookup("template", "templates/vm.xml.j2") }}'
+#        uri: "qemu:///session"
+#      vars:
+#        name: "worker_0"
+#        memory: 4096
+#        vcpus: 1
+#        disk_file: "{{ vms_path }}/worker_0/{{ fedora_coreos_cloud_image_name }}"
+#        vm_mac: "52:54:00:00:05:62"
+#        vm_bridge: "virbr-okd-cl"
+#        fw_cfg: "name=opt/com.coreos/config,file=/tmp/worker.ign"
+#    - name: Start worker_0 vm
+#      virt:
+#        command: start
+#        name: "worker_0"
+#        autostart: yes
+#        uri: "qemu:///session"
+#    - name: Wait for port 22
+#      wait_for:
+#        host: "10.0.5.62"
+#        port: 22
+#        state: drained
+#        delay: 10
+#    - name: Add worker_0 host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+#      shell: |
+#        while [ -z "$knownHost" ]
+#        do
+#          sleep 1
+#          knownHost=$(ssh-keyscan -t ssh-rsa 10.0.5.62)
+#        done
+#        echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
+#      args:
+#        executable: /bin/bash

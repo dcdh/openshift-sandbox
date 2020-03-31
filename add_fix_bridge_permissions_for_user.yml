@@ -1,0 +1,27 @@
+---
+- name: add fix bridge permissions for user
+  hosts: localhost
+  tasks:
+    - name: Add fix bridge permissions for user
+      block:
+        - name: check if user conf is defined
+          stat:
+            path: /etc/qemu-kvm/{{ ansible_user_id }}.conf
+          register: user_conf
+        - name: create user conf
+          copy:
+            dest: /etc/qemu-kvm/{{ ansible_user_id }}.conf
+            content: |
+              allow all
+            mode: 640
+            owner: root
+            group: "{{ ansible_user_id }}"
+          when: user_conf.stat.exists == False
+        - name: include user conf in bridge.conf if not present
+          lineinfile:
+            path: /etc/qemu-kvm/bridge.conf
+            state: present
+            line: "include /etc/qemu-kvm/{{ ansible_user_id }}.conf"
+            backup: yes
+      become: true
+      become_user: root

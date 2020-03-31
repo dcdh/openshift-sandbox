@@ -1,0 +1,34 @@
+---
+- name: Uninstall prerequisite okd infrastructure
+  hosts: localhost
+  vars:
+    installer_path: "/home/{{ ansible_user_id }}/.okd"
+  tasks:
+    - name: Clean prerequisite installation
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_fileglob:
+        - "/tmp/bootstrap.ign"
+        - "/tmp/worker.ign"
+        - "/tmp/master.ign"
+        - "{{ installer_path }}/bootstrap.ign"
+        - "{{ installer_path }}/worker.ign"
+        - "{{ installer_path }}/master.ign"
+        - "{{ installer_path }}/oc"
+        - "{{ installer_path }}/kubectl"
+        - "{{ installer_path }}/metadata.json"
+        - "{{ installer_path }}/README.md"
+        - "{{ installer_path }}/openshift-install"
+        - "{{ installer_path }}/openshift-client-linux-*"
+        - "{{ installer_path }}/openshift-install-linux-*"
+        - "{{ installer_path }}/auth"
+        - "{{ installer_path }}/.openshift*"
+        - "{{ installer_path }}/install-config*"
+        - "{{ installer_path }}/manifests*"
+    - name: Clean prerequisite installation
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        ["{{ installer_path }}/manifests","{{ installer_path }}/auth","{{ installer_path }}/openshift"]
