@@ -67,5 +67,18 @@
 #          assert:
 #            that:
 #              - "'10.0.5.57' == ip_resolved.stdout"
+#    - name: Check external dns resolution is working in {{ vm_name }} VM
+#      block:
+#        - name: Execute Host resolution
+#          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig google.fr +short'
+#          register: ips_resolved
+#        - debug:
+#            msg: "{{ ips_resolved }}"
+#        - name: Ensure external host is resolved
+#          assert:
+#            that:
+#              - "ips_resolved is defined"
+#              - "ips_resolved.stdout_lines is defined"
+#              - "ips_resolved.stdout_lines|length > 0"
 
 #Wait for control_plane_0 to be up ... it may takes a lot of times ~ 20 min depending on network traffic

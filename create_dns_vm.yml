@@ -13,15 +13,7 @@
     bridge: virbr-okd-dns
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-#    dns_listing:
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.6.10", name: "dns.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "lb.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "api.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "api-int.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.58", name: "bootstrap.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.59", name: "control-plane-0.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.59", name: "etcd-0.ocp4-cluster-001.sandbox.okd" }
-#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.62", name: "compute-0.ocp4-cluster-001.sandbox.okd" }
+    load_balancer_ip: "10.0.5.57"
   tasks:
     - name: Get vms defined
       virt:
@@ -138,7 +130,7 @@
                     # You can define the localhost or vm ip as nameserver but NOT the bridge ip however it will constantly loop
                     # when you will define it as primary nameserver on the host. You will not be able to resolve ip and to connect via ssh.
                     # The dns vm will be used as primary dns. If it fails to resolve the secondary dns will handle it
-                    supersede domain-name-servers 127.0.0.1;
+                    supersede domain-name-servers 127.0.0.1,8.8.8.8;
                     timeout 300;
                     retry 60;
                   path: /etc/dhcp/dhclient.conf
@@ -223,10 +215,10 @@
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to dns vm ip
+            - name: Ensure ip resolved to load balancer vm ip
               assert:
                 that:
-                  - "'{{ ip }}' == ip_resolved.stdout"
+                  - "'{{ load_balancer_ip }}' == ip_resolved.stdout"
 
         - name: |
             Add dns entry into Host to be able to access vm in '.sandbox.okd'.
@@ -254,17 +246,30 @@
               shell: systemctl reload NetworkManager
           become: true
           become_user: root
-        - name: Check Host resolution is working
+        - name: Check internal dns Host resolution is working
           block:
             - name: Execute Host resolution
               shell: dig apps.ocp4-cluster-001.sandbox.okd +short
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to dns vm ip
+            - name: Ensure ip resolved to load balancer vm ip
               assert:
                 that:
-                  - "'{{ ip }}' == ip_resolved.stdout"
+                  - "'{{ load_balancer_ip }}' == ip_resolved.stdout"
+        - name: Check external dns Host resolution is working
+          block:
+            - name: Execute Host resolution
+              shell: dig google.fr +short
+              register: ips_resolved
+            - debug:
+                msg: "{{ ips_resolved }}"
+            - name: Ensure external host is resolved
+              assert:
+                that:
+                  - "ips_resolved is defined"
+                  - "ips_resolved.stdout_lines is defined"
+                  - "ips_resolved.stdout_lines|length > 0"
         - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on Host resolve to load balander
           block:
             - name: Execute Host resolution

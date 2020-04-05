@@ -1,14 +1,14 @@
 ---
 # This playbook uninstall OKD 4 on a local server
 
-#- import_playbook: delete_okd_dns_network.yml
-#- import_playbook: remove_fix_bridge_permissions_for_user.yml
-#- import_playbook: delete_dns_vm.yml
-#
-#- import_playbook: delete_okd_cluster_network.yml
-#- import_playbook: delete_load_balancer_vm.yml
+- import_playbook: delete_okd_dns_network.yml
+- import_playbook: remove_fix_bridge_permissions_for_user.yml
+- import_playbook: delete_dns_vm.yml
 
-#- import_playbook: uninstall_prerequisite_okd_infrastructure.yml
+- import_playbook: delete_okd_cluster_network.yml
+- import_playbook: delete_load_balancer_vm.yml
+
+- import_playbook: uninstall_prerequisite_okd_infrastructure.yml
 - import_playbook: delete_bootstrap_okd_vm.yml
 - import_playbook: delete_worker_0_okd_vm.yml
 - import_playbook: delete_control_plane_0_okd_vm.yml

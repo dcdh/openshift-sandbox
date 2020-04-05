@@ -194,7 +194,7 @@
                         server      compute-0 10.0.5.62:443 check
                   path: /run/myconf/haproxy.cfg
                 - content: |
-                    supersede domain-name-servers {{ dns_ip }},8.8.8.8;
+                    supersede domain-name-servers {{ dns_ip }};
                     timeout 300;
                     retry 60;
                   path: /etc/dhcp/dhclient.conf
@@ -283,4 +283,17 @@
               assert:
                 that:
                   - "'{{ dns_ip }}' == ip_resolved.stdout"
+        - name: Check external dns resolution is working in {{ vm_name }} VM
+          block:
+            - name: Execute Host resolution
+              shell: ssh centos@{{ ip }} 'dig google.fr +short'
+              register: ips_resolved
+            - debug:
+                msg: "{{ ips_resolved }}"
+            - name: Ensure external host is resolved
+              assert:
+                that:
+                  - "ips_resolved is defined"
+                  - "ips_resolved.stdout_lines is defined"
+                  - "ips_resolved.stdout_lines|length > 0"
       when: info.lb is not defined
