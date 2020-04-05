@@ -261,6 +261,26 @@
             done
           args:
             executable: /bin/bash
-#TODO verifier que le service haproxy est up comme pour le dns ...
-#TODO verifier que tu peux accéder via dig au serveur dns ... avec ping, telnet ...
+        - name: Check {{ vm_name }} haproxy service is active
+          block:
+            - name: Get {{ vm_name }} haproxy service status
+              shell: ssh centos@{{ ip }} 'sudo systemctl is-active haproxy'
+              register: is_active
+            - debug:
+                msg: "{{ is_active }}"
+            - name: Ensure {{ vm_name }} haproxy service is active
+              assert:
+                that:
+                  - "'active' == is_active.stdout"
+        - name: Check dns vm is resolvable in {{ vm_name }} VM
+          block:
+            - name: Execute dns vm resolution in {{ vm_name }} VM
+              shell: ssh centos@{{ ip }} 'dig dns.ocp4-cluster-001.sandbox.okd +short'
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to dns vm ip
+              assert:
+                that:
+                  - "'{{ dns_ip }}' == ip_resolved.stdout"
       when: info.lb is not defined
