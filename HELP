@@ -17,13 +17,45 @@ nmcli dev show eth0 | grep IP4
 https://api.ocp4-cluster-001.sandbox.okd:6443/
 
 
-worker
-https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker
+depuis le bootstrap ssh damien@10.0.5.58
+curl -k -v https://localhost:22623/config/master
+
+
+OK donc tester avec 3 controle plane et 2 workers ...
+c'est certainement liée au non respect ...
+
+worker KO !!!!!!!!!!!!!!!!!!!!!!!!!!
+
+/var/log/pods/default_bootstrap-machine-config-operator-bootstrap.ocp4-cluster-001.sandbox.okd_786b1ef2b1954aa7196c3660a8186ff8/machine-config-server
+refusing to serve bootstrap configuration to pool "worker"
+2020-04-05T21:39:56.812099836+00:00 stderr F E0405 21:39:56.812063       1 api.go:103] couldn't get config for req: {worker}, error: refusing to serve bootstrap configuration to pool "worker"
+https://github.com/openshift/machine-config-operator/blob/master/pkg/server/api.go
+
+/etc/mcs/bootstrap/machine-configs
+/etc/mcs/bootstrap/machine-pools
+
+/// => ici le message !!
+https://github.com/openshift/machine-config-operator/blob/671a5546fd3445b50ea5f4259378683cd329025f/pkg/server/bootstrap_server.go
+>
+func (bsc *bootstrapServer) GetConfig(cr poolRequest) (*runtime.RawExtension, error) {
+	if cr.machineConfigPool != "master" {
+		return nil, fmt.Errorf("refusing to serve bootstrap configuration to pool %q", cr.machineConfigPool)
+	}
+///
+Putain voici le commit :
+https://github.com/openshift/machine-config-operator/commit/c58b8f9687dd6ea8b245fa8901bc0ab3cc99d439
+
+
+
+
+curl -k -v https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker
+
+
 
 ssh damien@10.0.5.62 connection refused ...
 
-master
-https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+master OK je dois determiner comment celui ci est up
+curl -k -v https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
 
 ssh damien@10.0.5.59 connection refused ...
 
@@ -59,6 +91,8 @@ docker run -ti giantswarm/tiny-tools sh
 
 https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
 
+
+rpm-ostree install telnet
 
 
 nmcli dev show

@@ -7,6 +7,8 @@
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
     fedora_coreos_cloud_image_name_archive: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2.xz"
+#    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200210.3.0-qemu.x86_64.qcow2"
+#    fedora_coreos_cloud_image_name_archive: "fedora-coreos-31.20200210.3.0-qemu.x86_64.qcow2.xz"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     pull_secret: "/home/damien/Téléchargements/pull-secret" # FIXME
@@ -35,14 +37,27 @@
       become: true
       become_user: root
       mode: u+rwx,g+rwx,o+rwx
-    - name: Download okd installer
-      get_url:
-        url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-install-linux-{{ okd_version }}.tar.gz
-        dest: "{{ installer_path }}"
-    - name: Extract okd installer
-      unarchive:
-        src: "{{ installer_path }}/openshift-install-linux-{{ okd_version }}.tar.gz"
-        dest: "{{ installer_path }}"
+    - name: Downgrade OKD to an expected working version
+      block:
+        - name: Extract downgraded release
+          shell: "/usr/bin/oc adm release extract --tools registry.svc.ci.openshift.org/origin/release:4.4.0-0.okd-2020-04-05-010426 --to='{{ installer_path }}'"
+        - name: Extract client
+          unarchive:
+            src: "{{ installer_path }}/openshift-client-linux-4.4.0-0.okd-2020-04-05-010426.tar.gz"
+            dest: "{{ installer_path }}"
+        - name: Extract installer
+          unarchive:
+            src: "{{ installer_path }}/openshift-install-linux-4.4.0-0.okd-2020-04-05-010426.tar.gz"
+            dest: "{{ installer_path }}"
+        - name: Copy kubectl and oc to /usr/bin
+          copy:
+            src: "{{ installer_path }}/{{ item }}"
+            dest: "/usr/bin/{{ item }}"
+          with_items:
+            ["kubectl","oc"]
+          become: true
+          become_user: root
+          mode: u+rwx,g+rwx,o+rwx
     - name: Check if fedora coreos cloud image is present
       stat:
         path: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
@@ -50,9 +65,9 @@
     - name: Download fedora coreos cloud image
       become: no
       get_url:
-        url: "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200310.3.0/x86_64/{{ fedora_coreos_cloud_image_name_archive }}"
+        url: "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200210.3.0/x86_64/{{ fedora_coreos_cloud_image_name_archive }}"
         dest: "{{ images_path }}"
-        sha256sum: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
+#        sha256sum: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
       when: fedora_coreos_cloud_image.stat.exists == False
     - name: Unarchive fedora cloud image
       shell:
