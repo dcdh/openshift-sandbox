@@ -115,7 +115,7 @@
               write_files:
                 - content: |
                     local=/ocp4-cluster-001.sandbox.okd/
-                    address=/apps.ocp4-cluster-001.sandbox.okd/10.0.6.10
+                    address=/apps.ocp4-cluster-001.sandbox.okd/10.0.5.57
                     srv-host=_etcd-server-ssl._tcp.ocp4-cluster-001.sandbox.okd,control-plane-0.ocp4-cluster-001.sandbox.okd,2380,0,10
                     no-hosts
                     addn-hosts=/etc/dnsmasq.okd.addnhosts
