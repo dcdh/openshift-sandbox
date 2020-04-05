@@ -5,7 +5,7 @@
 - import_playbook: remove_fix_bridge_permissions_for_user.yml
 - import_playbook: delete_dns_vm.yml
 
-#- import_playbook: uninstall_okd_cluster_network.yml
+- import_playbook: delete_okd_cluster_network.yml
 #- import_playbook: delete_load_balancer_vm.yml
 
 #- import_playbook: uninstall_prerequisite_okd_infrastructure.yml

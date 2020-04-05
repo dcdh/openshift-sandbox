@@ -10,7 +10,8 @@
     centos7_cloud_image_url: "https://cloud.centos.org/centos/7/images/{{ centos7_cloud_image_name }}"
     mac: "52:54:00:00:05:57"
     ip: "10.0.5.57"
-    bridge: virbr-okd-cl
+    dns_ip: "10.0.6.10"
+    bridge: virbr-okd-cl0
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
   tasks:
     - name: Get vms defined
@@ -192,6 +193,11 @@
                         mode tcp
                         server      compute-0 10.0.5.62:443 check
                   path: /run/myconf/haproxy.cfg
+                - content: |
+                    supersede domain-name-servers {{ dns_ip }},8.8.8.8;
+                    timeout 300;
+                    retry 60;
+                  path: /etc/dhcp/dhclient.conf
 
               # The message is located in /var/log/cloud-init.log
               final_message: "The system is finally up, after $UPTIME seconds"
@@ -255,4 +261,6 @@
             done
           args:
             executable: /bin/bash
+#TODO verifier que le service haproxy est up comme pour le dns ...
+#TODO verifier que tu peux accéder via dig au serveur dns ... avec ping, telnet ...
       when: info.lb is not defined
