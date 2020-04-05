@@ -116,6 +116,11 @@
                   # expose dns to use by the dns VM.
                   # /!\ Not working I do not why... I fix it in dns vm cloud-init
                   dhcp-option=6,{{ dns_ip }},{{ bridge_ip }}
+
+                  cache-size=10000
+                  log-dhcp
+                  log-queries=extra
+                  log-facility=/var/log/dnsmasq-{{ bridge_name }}.log
                 mode: u=rw,g=r,o=r
                 owner: root
                 group: root

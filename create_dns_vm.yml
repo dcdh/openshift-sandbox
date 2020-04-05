@@ -120,7 +120,7 @@
                     no-hosts
                     addn-hosts=/etc/dnsmasq.okd.addnhosts
                     conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
-                    # increase cache to avoid dns vm to hang (and unable to ssh on it)
+
                     cache-size=10000
                     log-dhcp
                     log-queries=extra
