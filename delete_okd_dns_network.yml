@@ -1,0 +1,27 @@
+---
+- name: Delete okd dns network
+  hosts: localhost
+  vars:
+    bridge_name: virbr-okd-dns
+    ip: "10.0.6.10"
+  tasks:
+    - name: Delete okd dns network
+      block:
+        - name: Delete {{ bridge_name }} interface
+          file:
+            path: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+            state: absent
+        - name: restart service network
+          systemd:
+            state: restarted
+            name: network
+        - name: Disable dnsmasq service
+          shell: systemctl disable dnsmasq@{{ bridge_name }}.service
+        - name: Delete dnsmasq Host configuration
+          block:
+            - name: Delete {{ bridge_name }} conf
+              file:
+                path: /var/lib/dnsmasq/{{ bridge_name }}
+                state: absent
+      become: true
+      become_user: root

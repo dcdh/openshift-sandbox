@@ -11,7 +11,17 @@
     mac: "52:54:00:00:06:10"
     ip: "10.0.6.10"
     bridge: virbr-okd-dns
+    bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+#    dns_listing:
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.6.10", name: "dns.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "lb.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "api.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.57", name: "api-int.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.58", name: "bootstrap.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.59", name: "control-plane-0.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.59", name: "etcd-0.ocp4-cluster-001.sandbox.okd" }
+#      - { dns_ip: "10.0.6.10", vm_ip: "10.0.5.62", name: "compute-0.ocp4-cluster-001.sandbox.okd" }
   tasks:
     - name: Get vms defined
       virt:
@@ -110,6 +120,11 @@
                     no-hosts
                     addn-hosts=/etc/dnsmasq.okd.addnhosts
                     conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
+                    # increase cache to avoid dns vm to hang (and unable to ssh on it)
+                    cache-size=10000
+                    log-dhcp
+                    log-queries=extra
+                    log-facility=/var/log/dnsmasq.log
                   path: /run/myconf/dnsmasq.conf
                 - content: |
                     10.0.6.10 dns.ocp4-cluster-001.sandbox.okd
@@ -118,6 +133,15 @@
                     10.0.5.59 control-plane-0.ocp4-cluster-001.sandbox.okd  etcd-0.ocp4-cluster-001.sandbox.okd
                     10.0.5.62 compute-0.ocp4-cluster-001.sandbox.okd
                   path: /run/myconf/dnsmasq.okd.addnhosts
+                - content: |
+                    # The objectif is to overide the definition of nameserver in /etc/resolv.conf
+                    # You can define the localhost or vm ip as nameserver but NOT the bridge ip however it will constantly loop
+                    # when you will define it as primary nameserver on the host. You will not be able to resolve ip and to connect via ssh.
+                    # The dns vm will be used as primary dns. If it fails to resolve the secondary dns will handle it
+                    supersede domain-name-servers 127.0.0.1;
+                    timeout 300;
+                    retry 60;
+                  path: /etc/dhcp/dhclient.conf
 
               # The message is located in /var/log/cloud-init.log
               final_message: "The system is finally up, after $UPTIME seconds"
@@ -181,4 +205,64 @@
             done
           args:
             executable: /bin/bash
+        - name: Check {{ vm_name }} dnsmasq service is active
+          block:
+            - name: Get {{ vm_name }} dnsmasq service status
+              shell: ssh centos@{{ ip }} 'sudo systemctl is-active dnsmasq'
+              register: is_active
+            - debug:
+                msg: "{{ is_active }}"
+            - name: Ensure {{ vm_name }} dnsmasq service is active
+              assert:
+                that:
+                  - "'active' == is_active.stdout"
+        - name: Check local resolution in {{ vm_name }} VM
+          block:
+            - name: Execute local resolution in {{ vm_name }} VM
+              shell: ssh centos@{{ ip }} 'dig apps.ocp4-cluster-001.sandbox.okd +short'
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to dns vm ip
+              assert:
+                that:
+                  - "'{{ ip }}' == ip_resolved.stdout"
+
+        - name: |
+            Add dns entry into Host to be able to access vm in '.sandbox.okd'.
+            Howto do in Centos7 explains here : https://access.redhat.com/solutions/2817911
+            It seems that it is not working as expected after rebooting. So I lock /etc/resolv.conf to ensure
+            that no one will change it !
+          block:
+            - name: Add "dns=none" in /etc/NetworkManager/NetworkManager.conf if not present
+              lineinfile:
+                path: /etc/NetworkManager/NetworkManager.conf
+                regexp: '^dns\=none'
+                insertafter: '^\[main\]'
+                line: dns=none
+                backup: yes
+            - name: Add dns VM ip {{ ip }} entry into /etc/resolv.conf
+              lineinfile:
+                path: /etc/resolv.conf
+                regexp: '^nameserver {{ ip }}'
+                insertbefore: BOF
+                line: nameserver {{ ip }}
+                backup: yes
+            - name: Lock /etc/resolv.conf to avoid to be rewritten at startup
+              shell: chattr +i /etc/resolv.conf
+            - name: Reload NetworkManager service
+              shell: systemctl reload NetworkManager
+          become: true
+          become_user: root
+        - name: Check Host resolution is working
+          block:
+            - name: Execute Host resolution
+              shell: dig apps.ocp4-cluster-001.sandbox.okd +short
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to dns vm ip
+              assert:
+                that:
+                  - "'{{ ip }}' == ip_resolved.stdout"
       when: info.dns is not defined

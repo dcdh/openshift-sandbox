@@ -1,0 +1,134 @@
+prio:
+- des que je me connecte en ssh la vm se "plante" !!! et la resolution ne fonctionne plus :S
+  cachesize atteint ...
+  tail -f /var/log/messages
+  si je vire la dclaration du dns depuis mon HOST tout redeviens normale ... mais je ne peux plus faire de dns vers mes ip ...
+Putain je suis con ! j'ai crée une boucle avec le bridge ip qui fait appelle à mon dns et cela en boucle !!
+
+
+- loop pour tester les dns ...
+- sysctl -w net.ipv4.ip_forward=1
+
+
+
+nmcli dev show eth0 | grep IP4
+
+
+
+
+https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
+
+
+
+nmcli dev show
+
+
+dans le cluster okd !!! partie dnsmasq
+Rajouter comme configuration
+
+dhcp-option=option,valeur : Permet de définir les options envoyées aux clients avec l’adresse IP affectée. Les options suivante sont déterminées automatiquement à partir de la configuration de la machine qui fait tourner DnsMasq :
+
+                              1 : masque de sous-réseau
+                              3 : passerelle par défaut
+                              6 : serveur DNS
+                              28 : adresse de broadcast Par exemple, l’option 23 utilisée ici, permet de définir le TTL envoyé aux clients
+
+touch /etc/dnsmasq.d/virbr-okd-dns.conf && \
+echo "except-interface=virbr-okd-dns" >> /etc/dnsmasq.d/virbr-okd-dns.conf && \
+systemctl restart dnsmasq
+
+service dnsmasq restart
+
+journalctl -u dnsmasq
+
+iptables -A INPUT -i virbr-okd-dns -p udp -m udp -m multiport --dports 53,67 -j ACCEPT && \
+  iptables -A INPUT -i virbr-okd-dns -p tcp -m tcp -m multiport --dports 53,67 -j ACCEPT
+
+
+iptables -t nat -I POSTROUTING -o wlp82s0 -j MASQUERADE
+
+
+
+ip neighbor
+
+dnsmasq --conf-file=/var/lib/dnsmasq/virbr-okd-dns/dnsmasq.conf --pid-file=/var/run/virbr-okd-dns.pid
+
+> dnsmasq   10179 nobody    7u  IPv4 117760      0t0  TCP 10.0.6.1:53 (LISTEN)
+Youpi !!!
+
+  lsof -i -P -n |grep dnsmasq
+
+
+# libvert change is setup
+
+
+                              strict-order
+                              domain=ocp4-cluster-001.sandbox.okd
+                              expand-hosts
+                              pid-file=/var/run/libvirt/network/okd-dns0.pid
+                              except-interface=lo
+                              bind-dynamic
+                              interface=virbr-okd-dns
+                              dhcp-range=10.0.6.10,10.0.6.254
+                              dhcp-no-override
+                              dhcp-authoritative
+                              dhcp-lease-max=245
+                              dhcp-hostsfile=/var/lib/libvirt/dnsmasq/okd-dns0.hostsfile
+                              addn-hosts=/var/lib/libvirt/dnsmasq/okd-dns0.addnhosts
+
+
+
+fix an issue when we want the load balancer vm to communicate with the dns vm (Destination Port Unreachable)
+
+iptables -I FORWARD 1 -j ACCEPT
+
+putain il faut que je rajoute ces regles et si je redemmare je suis dans le mouise... car elle vont disparaitre ou pas se
+retrouver dans la meme priorité ...
+passer par un hook au demarrage de la vm pour reecrire la table iptable !!!
+
+iptables -I FORWARD 1 -d 10.0.6.0/24 -j ACCEPT && \
+iptables -I FORWARD 1 -s 10.0.6.0/24 -j ACCEPT && \
+iptables -I FORWARD 1 -d 10.0.5.0/24 -j ACCEPT && \
+iptables -I FORWARD 1 -s 10.0.5.0/24 -j ACCEPT
+
+iptables -L -v --line-numbers
+systemctl restart iptables
+
+ok il faut que j'utilise un network open !
+
+systemctl restart iptables
+systemctl status iptables
+
+
+
+iptables -D FORWARD 4
+iptables -F
+
+il faut envoyer un SIGHUP sur le process root de libvirt ... kill -1 45737
+et du coup toutes mes tables de routage changes et bingo cela ne marche plus !!!
+
+
+
+/var/lib/libvirt/dnsmasq
+
+
+///////////////////////////////////////////////////////////////
+
+1. definir les bridges
+
+comment assigner le dns au niveau du bridge... ???
+
+vi /etc/sysconfig/network-scripts/ifcfg-virbr-okd-dns
+vi /etc/sysconfig/network-scripts/ifcfg-virbr-okd-dns
+
+
+2. definir via dnsmasq les @mac et @ip associées
+
+3. rajouter dans iptables les regles de Forward et autres ...
+
+putain fais chier !!!
+  /etc/libvirt/qemu/networks
+
+//////////////////////////////////////////
+
+faire un script pour preparer le Host : soit ipv4 forward ...

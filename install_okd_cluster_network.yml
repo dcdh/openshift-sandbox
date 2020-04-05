@@ -15,16 +15,16 @@
             command: define
             name: "{{ network_name }}"
             xml: '{{ lookup("template", "templates/network/okd-cluster-network.xml.j2") }}'
-          when: network_name|string not in nets.list_nets
+#          when: network_name|string not in nets.list_nets
         - name: Start {{ network_name }} network
           virt_net:
             command: start
             name: "{{ network_name }}"
-          when: network_name|string not in nets.list_nets
+#          when: network_name|string not in nets.list_nets
         - name: Define {{ network_name }} network as autostart
           virt_net:
             autostart: yes
             name: "{{ network_name }}"
-          when: network_name|string not in nets.list_nets
+#          when: network_name|string not in nets.list_nets
       become: true
       become_user: root

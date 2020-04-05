@@ -3,6 +3,7 @@
   hosts: localhost
   vars:
     - vm_name: dns
+    - dns_vm_ip: 10.0.6.10
   tasks:
     - name: Delete vm data
       file:
@@ -32,3 +33,23 @@
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
         regexp: '^10\.0\.6\.10.*$'
+    - name: Restore Host NetworkManager.conf
+      block:
+        - name: Remove dns=none configuration from /etc/NetworkManager/NetworkManager.conf
+          lineinfile:
+            path: /etc/NetworkManager/NetworkManager.conf
+            state: absent
+            regexp: '^dns\=none'
+            backup: yes
+        - name: Unlock /etc/resolv.conf to avoid to be rewritten at startup
+          shell: chattr -i /etc/resolv.conf
+        - name: Remove dns VM ip {{ dns_vm_ip }} entry into /etc/resolv.conf
+          lineinfile:
+            path: /etc/resolv.conf
+            state: absent
+            regexp: '^nameserver {{ dns_vm_ip }}'
+            backup: yes
+        - name: Reload NetworkManager service
+          shell: systemctl reload NetworkManager
+      become: true
+      become_user: root

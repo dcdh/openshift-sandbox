@@ -34,7 +34,7 @@
         ["kubectl","oc"]
       become: true
       become_user: root
-      mode: u+rwx,g+wxx,o+rwx
+      mode: u+rwx,g+rwx,o+rwx
     - name: Download okd installer
       get_url:
         url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-install-linux-{{ okd_version }}.tar.gz
