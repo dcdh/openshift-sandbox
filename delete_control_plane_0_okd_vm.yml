@@ -1,8 +1,8 @@
 ---
-- name: Delete bootstrap virtual machine
+- name: Delete control_plane_0 okd virtual machine
   hosts: localhost
   vars:
-    - vm_name: bootstrap
+    - vm_name: control_plane_0
   tasks:
     - name: Delete vm data
       file:
@@ -20,15 +20,15 @@
         command: destroy
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.bootstrap is defined and info.bootstrap.state == "running"
+      when: info.control_plane_0 is defined and info.control_plane_0.state == "running"
     - name: Undefine {{ vm_name }} vm
       virt:
         command: undefine
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.bootstrap is defined
+      when: info.control_plane_0 is defined
     - name: Remove {{ vm_name }} vm host from known_hosts
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
-        regexp: '^10\.0\.5\.58.*$'
+        regexp: '^10\.0\.5\.59.*$'

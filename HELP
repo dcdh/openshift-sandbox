@@ -14,6 +14,47 @@ Putain je suis con ! j'ai crée une boucle avec le bridge ip qui fait appelle à
 nmcli dev show eth0 | grep IP4
 
 
+https://api.ocp4-cluster-001.sandbox.okd:6443/
+
+
+worker
+https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker
+
+ssh damien@10.0.5.62 connection refused ...
+
+master
+https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+
+ssh damien@10.0.5.59 connection refused ...
+
+La connection est accessible une fois que le fichier à merger dans la conf est recuperé
+
+
+dans mes conf j'ai une notion de merge ...
+"merge": [
+        {
+          "source": "https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker"
+        }
+      ]
+peut être qu'il est en attente et une fois recu il applique la conf ...
+
+
+
+# TODO prefixer avec le numero de cluster pour worker et control plane ! et bootstrap !!!
+
+putain une fois que bootstrap a redemarre mes
+
+https://api.ocp4-cluster-001.sandbox.okd:6443/version?timeout=32s:
+10.0.5.57 envoie vers le loadbalander
+6443
+                    backend ocp4_k8s_api_be
+                        balance roundrobin
+                        mode tcp
+                        server      bootstrap 10.0.5.58:6443 check
+                        server      control-plane-0 10.0.5.59:6443 check
+
+docker run -ti giantswarm/tiny-tools sh
+
 
 
 https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
@@ -26,12 +67,6 @@ nmcli dev show
 dans le cluster okd !!! partie dnsmasq
 Rajouter comme configuration
 
-dhcp-option=option,valeur : Permet de définir les options envoyées aux clients avec l’adresse IP affectée. Les options suivante sont déterminées automatiquement à partir de la configuration de la machine qui fait tourner DnsMasq :
-
-                              1 : masque de sous-réseau
-                              3 : passerelle par défaut
-                              6 : serveur DNS
-                              28 : adresse de broadcast Par exemple, l’option 23 utilisée ici, permet de définir le TTL envoyé aux clients
 
 touch /etc/dnsmasq.d/virbr-okd-dns.conf && \
 echo "except-interface=virbr-okd-dns" >> /etc/dnsmasq.d/virbr-okd-dns.conf && \
@@ -112,23 +147,8 @@ et du coup toutes mes tables de routage changes et bingo cela ne marche plus !!!
 /var/lib/libvirt/dnsmasq
 
 
-///////////////////////////////////////////////////////////////
+openshift-install wait-for bootstrap-complete --log-level debug
 
-1. definir les bridges
-
-comment assigner le dns au niveau du bridge... ???
-
-vi /etc/sysconfig/network-scripts/ifcfg-virbr-okd-dns
-vi /etc/sysconfig/network-scripts/ifcfg-virbr-okd-dns
-
-
-2. definir via dnsmasq les @mac et @ip associées
-
-3. rajouter dans iptables les regles de Forward et autres ...
-
-putain fais chier !!!
-  /etc/libvirt/qemu/networks
-
-//////////////////////////////////////////
+openshift-install wait-for install-complete --log-level debug
 
 faire un script pour preparer le Host : soit ipv4 forward ...

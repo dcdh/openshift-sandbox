@@ -1,0 +1,72 @@
+---
+- name: Create bootstrap okd virtual machine
+  hosts: localhost
+  vars:
+    images_path: "/home/{{ ansible_user_id }}/.okd/images"
+    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
+    vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+    ip: "10.0.5.58"
+  tasks:
+    - name: Create bootstrap virtual machine directory
+      file:
+        path: "{{ vms_path }}/bootstrap"
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+    - name: Copy fedora coreos cloud image from images to bootstrap vm
+      copy:
+        src: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
+        dest: "{{ vms_path }}/bootstrap/{{ fedora_coreos_cloud_image_name }}"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+        force: no
+    - name: Define bootstrap virtual machine
+      virt:
+        command: define
+        name: "bootstrap"
+        xml: '{{ lookup("template", "templates/vm.xml.j2") }}'
+        uri: "qemu:///session"
+      vars:
+        name: "bootstrap"
+        memory: 4096
+        vcpus: 1
+        disk_file: "{{ vms_path }}/bootstrap/{{ fedora_coreos_cloud_image_name }}"
+        vm_mac: "52:54:00:00:05:58"
+        vm_bridge: "virbr-okd-cl0"
+        fw_cfg: "name=opt/com.coreos/config,file=/tmp/bootstrap.ign"
+    - name: Start bootstrap vm
+      virt:
+        command: start
+        name: "bootstrap"
+        autostart: yes
+        uri: "qemu:///session"
+    - name: Wait for port 22
+      wait_for:
+        host: "{{ ip }}"
+        port: 22
+        state: drained
+        delay: 10
+    - name: Add bootstrap host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+      shell: |
+        while [ -z "$knownHost" ]
+        do
+          sleep 1
+          knownHost=$(ssh-keyscan -t ssh-rsa {{ ip }})
+        done
+        echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
+      args:
+        executable: /bin/bash
+    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on bootstrap VM resolve to load balander
+      block:
+        - name: Execute Host resolution
+          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
+          register: ip_resolved
+        - debug:
+            msg: "{{ ip_resolved }}"
+        - name: Ensure ip resolved to dns vm ip
+          assert:
+            that:
+              - "'10.0.5.57' == ip_resolved.stdout"
+
+#Wait for bootstrap to be up ... it may takes a lot of times ~ 20 min depending on network traffic
+#Wait for etc-signer to be up NOPE !
