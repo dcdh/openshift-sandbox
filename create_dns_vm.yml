@@ -265,4 +265,15 @@
               assert:
                 that:
                   - "'{{ ip }}' == ip_resolved.stdout"
+        - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on Host resolve to load balander
+          block:
+            - name: Execute Host resolution
+              shell: dig test.apps.ocp4-cluster-001.sandbox.okd +short
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to dns vm ip
+              assert:
+                that:
+                  - "'10.0.5.57' == ip_resolved.stdout"
       when: info.dns is not defined
