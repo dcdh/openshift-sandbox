@@ -28,7 +28,7 @@
         uri: "qemu:///session"
       vars:
         name: "worker_0"
-        memory: 4096
+        memory: 8192
         vcpus: 1
         disk_file: "{{ vms_path }}/worker_0/{{ fedora_coreos_cloud_image_name }}"
         vm_mac: "52:54:00:00:05:62"
@@ -59,7 +59,7 @@
 #    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on worker_0 VM resolve to load balander
 #      block:
 #        - name: Execute Host resolution
-#          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
+#          shell: ssh core@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
 #          register: ip_resolved
 #        - debug:
 #            msg: "{{ ip_resolved }}"
@@ -70,7 +70,7 @@
 #    - name: Check external dns resolution is working in {{ vm_name }} VM
 #      block:
 #        - name: Execute Host resolution
-#          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig google.fr +short'
+#          shell: ssh core@{{ ip }} 'dig google.fr +short'
 #          register: ips_resolved
 #        - debug:
 #            msg: "{{ ips_resolved }}"

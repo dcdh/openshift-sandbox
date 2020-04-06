@@ -186,3 +186,68 @@ openshift-install wait-for bootstrap-complete --log-level debug
 openshift-install wait-for install-complete --log-level debug
 
 faire un script pour preparer le Host : soit ipv4 forward ...
+
+
+https://console-openshift-console.apps.ocp4-cluster-001.sandbox.okd
+
+
+
+    # ok go pour cette configuration
+    # https://github.com/openshift/okd/issues/28
+    # https://builds.coreos.fedoraproject.org/browser
+    # testing
+    # https://builds.coreos.fedoraproject.org/prod/streams/testing/builds/31.20191217.2.0/x86_64/fedora-coreos-31.20191217.2.0-qemu.x86_64.qcow2.xz
+    # okd_version: "4.3.0-0.okd-2019-11-15-182656"
+    # fedora_coreos_cloud_image_name: "fedora-coreos-31.20191217.2.0-qemu.x86_64.qcow2"
+    # fedora_coreos_cloud_image_name_archive: "fedora-coreos-31.20191217.2.0-qemu.x86_64.qcow2.xz"
+
+
+
+#    okd_version: "4.4.0-0.okd-2020-01-28-022517"
+    #fedora_coreos_cloud_image_name: "fedora-coreos-31.20191217.2.0-qemu.x86_64.qcow2" marche pas
+    #fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2" marche pas
+    #fedora_coreos_cloud_image_name: "fedora-coreos-31.20200127.3.0-qemu.x86_64.qcow2" marche pas
+#    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200323.2.1-qemu.x86_64.qcow2" # marche pas
+    # Trouver pourquoi !!!!! bootstrap ne demarre pas !!!! OK elle demarre si je n'ai pas le fichier d'ignition... voir pourquoi
+    # Tester avec un fichier d'ignition simple (worker) OK il passe
+    # Trouver ou cela pose probleme dans le fichier de bootstrap !!! Et la galère continue !!! Comment debugger ignition
+    # Error at $.storage.file.48 line1 col 112716 duplicate entry defined
+    # Error at $.storage.file.49 line1 col 114217 duplicate entry defined
+    # ok je dois corriger via mon script python ceci : https://github.com/openshift/installer/pull/3078
+    # doublon: /opt/openshift/openshift/99_openshift-machineconfig_99-master-ssh.yaml et /opt/openshift/openshift/99_openshift-machineconfig_99-worker-ssh.yaml
+    # remove: /usr/local/bin/report-progress.sh ATTENTION: generer le fichier avec la derniere version puis VERIFIER !
+
+
+  # fix storage issue when generating bootstrap.ign
+  # Error at $.storage.file.48 line1 col 112716 duplicate entry defined
+  # Error at $.storage.file.49 line1 col 114217 duplicate entry defined
+  # /opt/openshift/openshift/99_openshift-machineconfig_99-master-ssh.yaml
+  # /opt/openshift/openshift/99_openshift-machineconfig_99-worker-ssh.yaml
+  # storage = data["storage"]
+  # print getattr(storage, "file")
+  # unique = { each["path"] : each for each in data["storage"]["file"] }.values()
+  # print unique
+
+
+
+
+
+Configurer un proxy registry
+
+
+
+
+> creer une machine container-registry
+ - meme niveau que dns
+> tester avec une image fcos (un autre master)
+> verifier que le container registry contient les images :)
+> faire du docker pull dans l'image vis à vis de
+
+
+https://computingforgeeks.com/create-docker-container-registry-with-podman-letsencrypt/
+/etc/containers/registries
+unqualified-search-registries = ['registry.access.redhat.com', 'docker.io']
+registries = ['myregistry.local','registry.computingforgeeks.com:5000']
+
+-rw-r--r--. 1 root root   76  6 avril 21:14 registries.conf
+

@@ -28,7 +28,7 @@
         uri: "qemu:///session"
       vars:
         name: "bootstrap"
-        memory: 4096
+        memory: 8192
         vcpus: 1
         disk_file: "{{ vms_path }}/bootstrap/{{ fedora_coreos_cloud_image_name }}"
         vm_mac: "52:54:00:00:05:58"
