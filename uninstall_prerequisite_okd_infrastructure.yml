@@ -12,6 +12,8 @@
         - "/tmp/bootstrap.ign"
         - "/tmp/worker.ign"
         - "/tmp/master.ign"
+        - "{{ installer_path }}/additional_configurations.fcc"
+        - "{{ installer_path }}/additional_configurations.json"
         - "{{ installer_path }}/bootstrap.ign"
         - "{{ installer_path }}/worker.ign"
         - "{{ installer_path }}/master.ign"

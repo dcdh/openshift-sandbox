@@ -1,36 +1,37 @@
 #!/usr/bin/python
 
+# TODO faire des tests !!!
+
 import sys
 import getopt
 import json
 
-ignCreatedFile=None
-user=None
-sshPublicKey=None
+input_ign_created_file=None
+input_additional_configuration_file=None
 
 myopts, args = getopt.getopt(sys.argv[1:],"", [
-  "ign-created-file=", "user=", "ssh-public-key="
+  "ign-created-file=", "additional-configuration-file="
 ])
 
 for o, a in myopts:
   if o == '--ign-created-file':
-    ignCreatedFile=a
-  elif o == '--user':
-    user=a
-  elif o == '--ssh-public-key':
-    sshPublicKey=a
+    input_ign_created_file=a
+  elif o == '--additional-configuration-file':
+    input_additional_configuration_file=a
 
-if ignCreatedFile is None:
+if input_ign_created_file is None:
   raise TypeError("Missing ign created file")
 
-if user is None:
-  raise TypeError("Missing user")
+if input_additional_configuration_file is None:
+  raise TypeError("Missing additional configuration file")
 
-if sshPublicKey is None:
-  raise TypeError("Missing ssh public key")
+with open(input_additional_configuration_file, "r") as data_additional_configuration:
 
-with open(ignCreatedFile, "r") as ign_created_file:
-  data = json.load(ign_created_file)
+
+TODO merge !!!
+
+with open(input_ign_created_file, "r") as data_ign_created:
+  data = json.load(data_ign_created)
 
   if hasattr(data, "passwd") is False:
     data["passwd"] = {}
@@ -50,6 +51,6 @@ with open(ignCreatedFile, "r") as ign_created_file:
   })
   ign_created_file.close()
 
-with open(ignCreatedFile, "w") as ign_created_file:
+with open(input_ign_created_file, "w") as ign_created_file:
   json.dump(data, ign_created_file)
   ign_created_file.close()

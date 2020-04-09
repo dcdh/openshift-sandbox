@@ -1,0 +1,47 @@
+---
+- name: Delete container_registry virtual machine
+  hosts: localhost
+  vars:
+    - vm_name: container_registry
+    - dns_vm_ip: 10.0.6.11
+  tasks:
+    - name: Delete container_registry data
+      file:
+        path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
+        state: absent
+    - name: Get vm info
+      virt:
+        command: info
+        uri: "qemu:///session"
+      register: info
+    - debug:
+        msg: "{{ info }}"
+    - name: Destroy {{ vm_name }} vm
+      virt:
+        command: destroy
+        name: "{{ vm_name }}"
+        uri: "qemu:///session"
+      when: info.container_registry is defined and info.container_registry.state == "running"
+    - name: Undefine {{ vm_name }} vm
+      virt:
+        command: undefine
+        name: "{{ vm_name }}"
+        uri: "qemu:///session"
+      when: info.container_registry is defined
+    - name: Remove {{ vm_name }} vm host from known_hosts
+      lineinfile:
+        path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
+        state: absent
+        regexp: '^10\.0\.6\.11.*$'
+    - name: Remove ignition file
+      file:
+        path: /tmp/container_registry.ign
+        state: absent
+      become: true
+      become_user: root
+    - name: Remove fcc file
+      file:
+        path: /tmp/container_registry.fcc
+        state: absent
+      become: true
+      become_user: root

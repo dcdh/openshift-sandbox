@@ -129,6 +129,7 @@
                 dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
                 content: |
                   {{ dns_mac }},{{ dns_ip }}
+                  52:54:00:00:06:11,10.0.6.11
                 mode: u=rw,g=r,o=r
                 owner: root
                 group: root
