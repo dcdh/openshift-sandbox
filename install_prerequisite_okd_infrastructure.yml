@@ -108,15 +108,49 @@
         cmd: "{{ installer_path }}/openshift-install create ignition-configs --dir {{ installer_path }}"
       args:
         executable: /bin/bash
-    - name: Add {{ ansible_user_id }} as user in bootstrap vm
-      shell:
-        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/bootstrap.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
-    - name: Add {{ ansible_user_id }} as user in worker vm
-      shell:
-        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/worker.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
-    - name: Add {{ ansible_user_id }} as user in control plane vm
-      shell:
-        cmd: ./update_ignition.py --ign-created-file='{{ installer_path }}/master.ign' --user='{{ ansible_user_id }}' --ssh-public-key='{{ lookup('file', ssh_public_key) }}'
+    - name: Update ingitions file to define users and registry configuration
+      block:
+        - name: Define additional configuration fcc file to inject
+          copy:
+            dest: "{{ installer_path }}/additional_configurations.fcc"
+            content: |
+              variant: fcos
+              version: 1.0.0
+              passwd:
+                users:
+                  - name: core
+                    ssh_authorized_keys:
+                      - "{{ lookup('file', ssh_public_key) }}"
+                  - name: {{ ansible_user_id }}
+                    ssh_authorized_keys:
+                      - "{{ lookup('file', ssh_public_key) }}"
+                    groups: [ sudo, docker ]
+              storage:
+                files:
+                  - path: /etc/containers/registries.conf
+                    overwrite: true
+                    contents:
+                      inline: |
+                        [[registry]]
+                        prefix = "quay.io/openshift"
+                        location = "quay.io/openshift"
+                        mirror-by-digest-only = true
+
+                          [[registry.mirror]]
+                          location = "container-registry.ocp4-cluster-001.sandbox.okd/openshift"
+                          insecure = true
+        - name: Generate additional configuration ignition file
+          shell: "/bin/podman run -i --rm quay.io/coreos/fcct:release --pretty --strict < {{ installer_path }}/additional_configurations.fcc > {{ installer_path }}/additional_configurations.ign"
+    - name: Create backup before updating them using additional configuration
+      copy:
+        src: "{{ installer_path }}/{{ item }}"
+        dest: "{{ installer_path }}/{{ item }}.bak"
+      with_items:
+        ["bootstrap.ign","worker.ign","master.ign"]
+    - name: Update ignition file to add configuration from additional_configurations.ign (which is a json file)
+      shell: "./update_ignition.py --ign-created-file='{{ installer_path }}/{{ item }}' --additional-configuration-file='{{ installer_path }}/additional_configurations.ign'"
+      with_items:
+        ["bootstrap.ign","worker.ign","master.ign"]
     - name: Copy ignitions files to be accessible to KVM virtual machines
       copy:
         src: "{{ installer_path }}/{{ item }}"
