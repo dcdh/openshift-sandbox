@@ -457,3 +457,13 @@ chmod u=rw,g=r,o=r /etc/containers/registries.conf
 podman info --debug
 
 podman --log-level=debug pull quay.io/openshift/okd-content@sha256:b9d78a6300ae7d414aa2e4cb3353416d1c12c28ca2fb4b8874ad23c2937e4ccc
+
+
+---------------- jq installation
+
+wget https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 -O jq
+chmod +x jq
+mv jq /usr/local/bin
+
+
+sudo yum install python3

@@ -20,6 +20,7 @@
         packages:
           - centos-release-qemu-ev
           - qemu-kvm-ev
+          - python3
     - name: Download okd client
       get_url:
         url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-client-linux-{{ okd_version }}.tar.gz
@@ -144,11 +145,11 @@
     - name: Create backup before updating them using additional configuration
       copy:
         src: "{{ installer_path }}/{{ item }}"
-        dest: "{{ installer_path }}/{{ item }}.bak"
+        dest: "{{ installer_path }}/{{ item }}.original"
       with_items:
         ["bootstrap.ign","worker.ign","master.ign"]
     - name: Update ignition file to add configuration from additional_configurations.ign (which is a json file)
-      shell: "./update_ignition.py --ign-created-file='{{ installer_path }}/{{ item }}' --additional-configuration-file='{{ installer_path }}/additional_configurations.ign'"
+      shell: "./run_update_ignition.py --ign-created-file='{{ installer_path }}/{{ item }}' --additional-configuration-file='{{ installer_path }}/additional_configurations.ign'"
       with_items:
         ["bootstrap.ign","worker.ign","master.ign"]
     - name: Copy ignitions files to be accessible to KVM virtual machines

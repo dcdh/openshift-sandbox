@@ -1,53 +1,26 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-# TODO faire des tests !!!
-
-import sys
-import getopt
 import json
 
-input_ign_created_file=None
-input_additional_configuration_file=None
+def merge_okd_ignition_with_additional_ignition(data_okd_ignition: json, data_additional_ignition: json) -> json:
+  """
+    Merge data_okd_ignition with data_additional_ignition
+    Only passwd > users and storage > files are merged
+  """
+  if 'passwd' in data_additional_ignition and 'users' in data_additional_ignition['passwd']:
+    if 'passwd' not in data_okd_ignition:
+      data_okd_ignition['passwd'] = {}
+      data_okd_ignition['passwd']['users'] = []
+    if 'users' not in data_okd_ignition['passwd']:
+      data_okd_ignition['passwd']['users'] = []
+    data_okd_ignition['passwd']['users'].extend(data_additional_ignition['passwd']['users'])
 
-myopts, args = getopt.getopt(sys.argv[1:],"", [
-  "ign-created-file=", "additional-configuration-file="
-])
+  if 'storage' in data_additional_ignition and 'files' in data_additional_ignition['storage']:
+    if 'storage' not in data_okd_ignition:
+      data_okd_ignition['storage'] = {}
+      data_okd_ignition['storage']['files'] = []
+    if 'files' not in data_okd_ignition['storage']:
+      data_okd_ignition['storage']['files'] = []
+    data_okd_ignition['storage']['files'].extend(data_additional_ignition['storage']['files'])
 
-for o, a in myopts:
-  if o == '--ign-created-file':
-    input_ign_created_file=a
-  elif o == '--additional-configuration-file':
-    input_additional_configuration_file=a
-
-if input_ign_created_file is None:
-  raise TypeError("Missing ign created file")
-
-if input_additional_configuration_file is None:
-  raise TypeError("Missing additional configuration file")
-
-with open(input_ign_created_file, "r") as data_ign_created, open(input_additional_configuration_file, "r") as data_additional_configuration:
-  data_to_merge_to = json.load(data_ign_created)
-  data_to_merge_from = json.load(data_additional_configuration)
-
-  if hasattr(data_to_merge_to, "passwd") is False:
-    data_to_merge_to["passwd"] = {}
-    data_to_merge_to["passwd"]["users"] = []
-  if hasattr(data_to_merge_to["passwd"], "users") is False:
-    data_to_merge_to["passwd"]["users"] = []
-
-  data_to_merge_to["passwd"]["users"].append(data_to_merge_from["passwd"]["users"])
-
-  if hasattr(data_to_merge_to, "storage") is False:
-    data_to_merge_to["storage"] = {}
-    data_to_merge_to["storage"]["files"] = []
-  if hasattr(data_to_merge_to["storage"], "files") is False:
-    data_to_merge_to["storage"]["files"] = []
-
-  data_to_merge_to["storage"]["files"].append(data_to_merge_from["storage"]["files"])
-
-  data_ign_created.close()
-  data_additional_configuration.close()
-
-with open(input_ign_created_file, "w") as data_ign_created:
-  json.dump(data_to_merge_to, data_ign_created)
-  data_ign_created.close()
+  return data_okd_ignition
