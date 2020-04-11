@@ -8,6 +8,8 @@
     ip: "10.0.6.11"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: container-registry.ocp4-cluster-001.sandbox.okd
+    domain_crt: "{{ installer_path }}/domain.crt"
+    domain_key: "{{ installer_path }}/domain.key"
   block:
     - name: Get vms defined
       virt:
@@ -64,13 +66,13 @@
                         overwrite: true
                         contents:
                           inline: |
-                            {{ lookup('file',{{ installer_path }}/domain.crt) }}
+                            {{ lookup('file', domain_crt) | indent(width=10, indentfirst=False) }}
                         mode: 0644
                       - path: /opt/certs/domain.key
                         overwrite: true
                         contents:
                           inline: |
-                            {{ lookup('file', {{ installer_path }}/domain.key) }}
+                            {{ lookup('file', domain_key) | indent(width=10, indentfirst=False) }}
                         mode: 0644
                       - path: /etc/containers/registries.conf
                         overwrite: true
