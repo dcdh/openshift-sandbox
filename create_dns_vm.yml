@@ -129,9 +129,9 @@
                   path: /run/myconf/dnsmasq.okd.addnhosts
                 - content: |
                     # The objectif is to overide the definition of nameserver in /etc/resolv.conf
-                    # You can define the localhost or vm ip as nameserver but NOT the bridge ip however it will constantly loop
+                    # You can define the localhost or virtual machine ip as nameserver but NOT the bridge ip however it will constantly loop
                     # when you will define it as primary nameserver on the host. You will not be able to resolve ip and to connect via ssh.
-                    # The dns vm will be used as primary dns. If it fails to resolve the secondary dns will handle it
+                    # The dns virtual machine will be used as primary dns. If it fails to resolve the secondary dns will handle it
                     supersede domain-name-servers 127.0.0.1,8.8.8.8;
                     timeout 300;
                     retry 60;
@@ -191,7 +191,7 @@
         - name: Remove boot-init.iso from {{ vm_name }} vm
           shell:
             cmd: virsh change-media {{ vm_name }} --path {{ boot_init_iso_path }} --eject --config
-        - name: Wait until {{ vm_name }} vm is ready
+        - name: Wait until {{ vm_name }} virtual machine is ready
           shell: |
             while ! ssh centos@{{ ip }} 'sudo grep -nri "The system is finally up" /var/log/cloud-init.log' > /dev/null
             do
@@ -217,13 +217,13 @@
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to load balancer vm ip
+            - name: Ensure ip resolved to load balancer virtual machine ip
               assert:
                 that:
                   - "'{{ load_balancer_ip }}' == ip_resolved.stdout"
 
         - name: |
-            Add dns entry into Host to be able to access vm in '.sandbox.okd'.
+            Add dns entry into Host to be able to access virtual machine in '.sandbox.okd'.
             Howto do in Centos7 explains here : https://access.redhat.com/solutions/2817911
             It seems that it is not working as expected after rebooting. So I lock /etc/resolv.conf to ensure
             that no one will change it !
@@ -235,7 +235,7 @@
                 insertafter: '^\[main\]'
                 line: dns=none
                 backup: yes
-            - name: Add dns VM ip {{ ip }} entry into /etc/resolv.conf
+            - name: Add dns virtual machine ip {{ ip }} entry into /etc/resolv.conf
               lineinfile:
                 path: /etc/resolv.conf
                 regexp: '^nameserver {{ ip }}'
@@ -255,7 +255,7 @@
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to load balancer vm ip
+            - name: Ensure ip resolved to load balancer virtual machine ip
               assert:
                 that:
                   - "'{{ load_balancer_ip }}' == ip_resolved.stdout"
@@ -279,7 +279,7 @@
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to dns vm ip
+            - name: Ensure ip resolved to dns virtual machine ip
               assert:
                 that:
                   - "'10.0.5.57' == ip_resolved.stdout"

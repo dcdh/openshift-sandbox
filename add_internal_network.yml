@@ -64,7 +64,7 @@
           register: interface_connected_to_internet
         - debug:
             msg: "{{ interface_connected_to_internet.stdout }}"
-        - name: Allow all VM to access to internet using nat from Host
+        - name: Allow all virtual machine to access to internet using nat from Host
           shell: "iptables -t nat -I POSTROUTING -o {{ interface_connected_to_internet.stdout }} -j MASQUERADE"
         - name: Save iptable rules
           shell: "service iptables save"
@@ -111,7 +111,7 @@
               strict-order
 
               # expose dns to use by the dns VM.
-              # /!\ Not working I do not why... I fix it in dns vm cloud-init
+              # /!\ Not working I do not why... I fix it in dns virtual machine cloud-init
               dhcp-option=6,{{ dns_ip }},{{ bridge_ip }}
 
               cache-size=10000

@@ -35,7 +35,7 @@ Install OKD 4 under CentOS 7. KVM will be used to virtualize okd infrastructure.
 > How to set up dns
 >
 
-/!\ do not use `gnome boxes` to handle, visualize guest vm as it will automatically save and suspend them if no activity during 60 seconds and save and suspend whe exiting boxes.
+/!\ do not use `gnome boxes` to handle, visualize guest virtual machine as it will automatically save and suspend them if no activity during 60 seconds and save and suspend whe exiting boxes.
 There is no option to change these behaviors :(
 We do not want to suspend them. Use `virt-manager` instead :)
 

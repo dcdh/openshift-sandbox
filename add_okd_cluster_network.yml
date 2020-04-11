@@ -78,7 +78,7 @@
               strict-order
 
               # expose dns to use by the dns VM.
-              # /!\ Not working I do not why... I fix it in dns vm cloud-init
+              # /!\ Not working I do not why... I fix it in dns virtual machine cloud-init
               dhcp-option=6,{{ dns_ip }}
 
               cache-size=10000

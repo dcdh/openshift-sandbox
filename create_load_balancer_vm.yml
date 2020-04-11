@@ -256,7 +256,7 @@
         - name: Remove boot-init.iso from {{ vm_name }} vm
           shell:
             cmd: virsh change-media {{ vm_name }} --path {{ boot_init_iso_path }} --eject --config
-        - name: Wait until {{ vm_name }} vm is ready
+        - name: Wait until {{ vm_name }} virtual machine is ready
           shell: |
             while ! ssh centos@{{ ip }} 'sudo grep -nri "The system is finally up" /var/log/cloud-init.log' > /dev/null
             do
@@ -275,14 +275,14 @@
               assert:
                 that:
                   - "'active' == is_active.stdout"
-        - name: Check dns vm is resolvable in {{ vm_name }} VM
+        - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
           block:
-            - name: Execute dns vm resolution in {{ vm_name }} VM
+            - name: Execute dns virtual machine resolution in {{ vm_name }} VM
               shell: ssh centos@{{ ip }} 'dig dns.ocp4-cluster-001.sandbox.okd +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to dns vm ip
+            - name: Ensure ip resolved to dns virtual machine ip
               assert:
                 that:
                   - "'{{ dns_ip }}' == ip_resolved.stdout"

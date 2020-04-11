@@ -1,5 +1,5 @@
 prio:
-- des que je me connecte en ssh la vm se "plante" !!! et la resolution ne fonctionne plus :S
+- des que je me connecte en ssh la virtual machine se "plante" !!! et la resolution ne fonctionne plus :S
   cachesize atteint ...
   tail -f /var/log/messages
   si je vire la dclaration du dns depuis mon HOST tout redeviens normale ... mais je ne peux plus faire de dns vers mes ip ...
@@ -170,13 +170,13 @@ Youpi !!!
 
 
 
-fix an issue when we want the load balancer vm to communicate with the dns vm (Destination Port Unreachable)
+fix an issue when we want the load balancer virtual machine to communicate with the dns virtual machine (Destination Port Unreachable)
 
 iptables -I FORWARD 1 -j ACCEPT
 
 putain il faut que je rajoute ces regles et si je redemmare je suis dans le mouise... car elle vont disparaitre ou pas se
 retrouver dans la meme priorité ...
-passer par un hook au demarrage de la vm pour reecrire la table iptable !!!
+passer par un hook au demarrage de la virtual machine pour reecrire la table iptable !!!
 
 iptables -I FORWARD 1 -d 10.0.6.0/24 -j ACCEPT && \
 iptables -I FORWARD 1 -s 10.0.6.0/24 -j ACCEPT && \

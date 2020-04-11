@@ -71,7 +71,7 @@
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to dns vm ip
+            - name: Ensure ip resolved to dns virtual machine ip
               assert:
                 that:
                   - "'10.0.5.57' == ip_resolved.stdout"

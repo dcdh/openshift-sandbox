@@ -155,14 +155,14 @@
           args:
             executable: /bin/bash
       when: info.container_registry is not defined
-    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on container_registry VM resolve to load balander
+    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on container_registry virtual machine resolve to load balander
       block:
         - name: Execute Host resolution
           shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
           register: ip_resolved
         - debug:
             msg: "{{ ip_resolved }}"
-        - name: Ensure ip resolved to dns vm ip
+        - name: Ensure ip resolved to dns virtual machine ip
           assert:
             that:
               - "'10.0.5.57' == ip_resolved.stdout"
@@ -173,11 +173,11 @@
           register: ip_resolved
         - debug:
             msg: "{{ ip_resolved }}"
-        - name: Ensure ip resolved to container-registry vm ip
+        - name: Ensure ip resolved to container-registry virtual machine ip
           assert:
             that:
               - "'{{ ip }}' == ip_resolved.stdout"
-    - name: Check external dns resolution is working in {{ vm_name }} VM
+    - name: Check external dns resolution is working in {{ vm_name }} virtual machine
       block:
         - name: Execute Host resolution
           shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig google.fr +short'

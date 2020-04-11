@@ -56,18 +56,18 @@
 #        echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
 #      args:
 #        executable: /bin/bash
-#    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on worker_0 VM resolve to load balander
+#    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on worker_0 virtual machine resolve to load balander
 #      block:
 #        - name: Execute Host resolution
 #          shell: ssh core@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
 #          register: ip_resolved
 #        - debug:
 #            msg: "{{ ip_resolved }}"
-#        - name: Ensure ip resolved to dns vm ip
+#        - name: Ensure ip resolved to dns virtual machine ip
 #          assert:
 #            that:
 #              - "'10.0.5.57' == ip_resolved.stdout"
-#    - name: Check external dns resolution is working in {{ vm_name }} VM
+#    - name: Check external dns resolution is working in {{ vm_name }} virtual machine
 #      block:
 #        - name: Execute Host resolution
 #          shell: ssh core@{{ ip }} 'dig google.fr +short'
