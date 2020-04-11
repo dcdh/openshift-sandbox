@@ -156,8 +156,8 @@
                     backend ocp4_k8s_api_be
                         balance roundrobin
                         mode tcp
-                        server      bootstrap 10.0.5.58:6443 check
-                        server      control-plane-0 10.0.5.59:6443 check
+                        server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:6443 check
+                        server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:6443 check
 
                     frontend ocp4_machine_config_server_fe
                         bind :22623
@@ -168,8 +168,8 @@
                     backend ocp4_machine_config_server_be
                         balance roundrobin
                         mode tcp
-                        server      bootstrap 10.0.5.58:22623 check
-                        server      control-plane-0 10.0.5.59:22623 check
+                        server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:22623 check
+                        server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:22623 check
 
                     frontend ocp4_http_ingress_traffic_fe
                         bind :80
@@ -180,7 +180,7 @@
                     backend ocp4_http_ingress_traffic_be
                         balance roundrobin
                         mode tcp
-                        server      compute-0 10.0.5.62:80 check
+                        server      compute-0 compute-0.ocp4-cluster-001.sandbox.okd:80 check
 
                     frontend ocp4_https_ingress_traffic_fe
                         bind :443
@@ -191,7 +191,7 @@
                     backend ocp4_https_ingress_traffic_be
                         balance roundrobin
                         mode tcp
-                        server      compute-0 10.0.5.62:443 check
+                        server      compute-0 compute-0.ocp4-cluster-001.sandbox.okd:443 check
                   path: /run/myconf/haproxy.cfg
                 - content: |
                     supersede domain-name-servers {{ dns_ip }};
