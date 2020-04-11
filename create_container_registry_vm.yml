@@ -1,6 +1,5 @@
 ---
 - name: Create container_registry okd virtual machine
-  hosts: localhost
   vars:
     installer_path: "/home/{{ ansible_user_id }}/.okd"
     images_path: "{{ installer_path }}/images"
@@ -9,7 +8,7 @@
     ip: "10.0.6.11"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: container-registry.ocp4-cluster-001.sandbox.okd
-  tasks:
+  block:
     - name: Get vms defined
       virt:
         command: info
@@ -17,13 +16,13 @@
       register: info
     - name: Create container_registry virtual machine
       block:
-        - name: Create container_registry virtual machine directory
+        - name: Create {{ vm_name }} virtual machine directories
           file:
             path: "{{ vms_path }}/container_registry"
             state: directory
             owner: "{{ ansible_user_id }}"
             group: "{{ ansible_user_id }}"
-        - name: Copy fedora coreos cloud image from images to container_registry vm
+        - name: Copy fedora coreos cloud image from images to {{ vm_name }} virtual machine directory
           copy:
             src: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
             dest: "{{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }}"

@@ -5,7 +5,6 @@
     if the service iptables is restarted all the changed previously done by libvirt is lost. You need to send a SIGUP to the libvert pid to regenerate iptable rules.
     Moreover, I've got an issue - due to iptable rules - regarding the intra communication between guests. One is able to ping the other, and the other is not allowed to ping one :(
     So I decided to provide my own custom setup following the previous documentation.
-  hosts: localhost
   vars:
     default_network_name: default
     bridge_name: virbr-okd-dns
@@ -15,164 +14,162 @@
     dns_ip: "10.0.6.10"
     dhcp_range_start: "10.0.6.10"
     dhcp_range_end: "10.0.6.254"
-  tasks:
-    - name: Add okd dns network
+  block:
+    - name: Get network defined
+      virt_net:
+        command: list_nets
+      register: networks
+    - name: Destroy default network
+      virt_net:
+        autostart: false
+        command: destroy
+        name: "{{ default_network_name }}"
+      when: default_network_name|string in networks.list_nets
+    - name: Undefine default network
+      virt_net:
+        command: undefine
+        name: "{{ default_network_name }}"
+      when: default_network_name|string in networks.list_nets
+    - name: Add {{ bridge_name }} virtual bridge
+      copy:
+        dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+        content: |
+          DEVICE="{{ bridge_name }}"
+          BOOTPROTO="static"
+          IPADDR="{{ bridge_ip }}"
+          MACADDR="{{ bridge_mac }}"
+          NETMASK="255.255.255.0"
+          ONBOOT="yes"
+          TYPE="Bridge"
+          NM_CONTROLLED="no"
+    - name: Restart service network
+      systemd:
+        state: restarted
+        name: network
+    - name: Do not bind {{ bridge_name }} into Host system dnsmasq
       block:
-        - name: Get network defined
-          virt_net:
-            command: list_nets
-          register: networks
-        - name: Destroy default network
-          virt_net:
-            autostart: false
-            command: destroy
-            name: "{{ default_network_name }}"
-          when: default_network_name|string in networks.list_nets
-        - name: Undefine default network
-          virt_net:
-            command: undefine
-            name: "{{ default_network_name }}"
-          when: default_network_name|string in networks.list_nets
-        - name: Add {{ bridge_name }} virtual bridge
+        - name: Create system dnsmaq exclusion for {{ bridge_name }}
           copy:
-            dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+            dest: /etc/dnsmasq.d/{{ bridge_name }}.conf
             content: |
-              DEVICE="{{ bridge_name }}"
-              BOOTPROTO="static"
-              IPADDR="{{ bridge_ip }}"
-              MACADDR="{{ bridge_mac }}"
-              NETMASK="255.255.255.0"
-              ONBOOT="yes"
-              TYPE="Bridge"
-              NM_CONTROLLED="no"
-        - name: Restart service network
+              except-interface={{ bridge_name }}
+        - name: Restart dnsmasq
           systemd:
             state: restarted
-            name: network
-        - name: Do not bind {{ bridge_name }} into Host system dnsmasq
+            name: dnsmasq
+    - name: Setup iptables rules on Host
+      block:
+        - name: Retrieve interface connected to internet
+          shell: ip route | grep default | cut -d " " -f 5
+          register: interface_connected_to_internet
+        - debug:
+            msg: "{{ interface_connected_to_internet.stdout }}"
+        - name: Allow all VM to access to internet using nat from Host
+          shell: "iptables -t nat -I POSTROUTING -o {{ interface_connected_to_internet.stdout }} -j MASQUERADE"
+        - name: Save iptable rules
+          shell: "service iptables save"
+    - name: Setup Host dnsmasq used for dhcp configuration
+      block:
+        - name: Create {{ bridge_name }} directory
+          file:
+            path: "{{ item }}"
+            state: directory
+            mode: u=rwx,g=rx,o=rx
+            owner: "root"
+            group: "root"
+          with_items:
+            - "/var/lib/dnsmasq"
+            - "/var/lib/dnsmasq/{{ bridge_name }}"
+        - name: Create {{ bridge_name }} dnsmasq.conf
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/dnsmasq.conf
+            content: |
+              # Only bind to the virtual bridge. This avoids conflicts with other running
+              # dnsmasq instances.
+              except-interface=lo
+              interface={{ bridge_name }}
+              bind-dynamic
+
+              # If using dnsmasq 2.62 or older, remove "bind-dynamic" and "interface" lines
+              # and uncomment these lines instead:
+              #bind-interfaces
+              #listen-address=192.168.100.1
+
+              # IPv4 addresses to offer to VMs. This should match the chosen subnet.
+              dhcp-range={{ dhcp_range_start }},{{ dhcp_range_end }}
+
+              # Set this to at least the total number of addresses in DHCP-enabled subnets.
+              dhcp-lease-max=1000
+
+              # File to write DHCP lease information to.
+              dhcp-leasefile=/var/lib/dnsmasq/{{ bridge_name }}/leases
+              # File to read DHCP host information from.
+              dhcp-hostsfile=/var/lib/dnsmasq/{{ bridge_name }}/hostsfile
+              # Avoid problems with old or broken clients.
+              dhcp-no-override
+              # https://www.redhat.com/archives/libvir-list/2010-March/msg00038.html
+              strict-order
+
+              # expose dns to use by the dns VM.
+              # /!\ Not working I do not why... I fix it in dns vm cloud-init
+              dhcp-option=6,{{ dns_ip }},{{ bridge_ip }}
+
+              cache-size=10000
+              log-dhcp
+              log-queries=extra
+              log-facility=/var/log/dnsmasq-{{ bridge_name }}.log
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create {{ bridge_name }} hostsfile
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
+            content: |
+              {{ dns_mac }},{{ dns_ip }}
+              52:54:00:00:06:11,10.0.6.11
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create {{ bridge_name }} leases
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/leases
+            content: |
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create persistente execution of dnsmasq
           block:
-            - name: Create system dnsmaq exclusion for {{ bridge_name }}
+            - name: Create service
               copy:
-                dest: /etc/dnsmasq.d/{{ bridge_name }}.conf
+                dest: /etc/systemd/system/dnsmasq@.service
                 content: |
-                  except-interface={{ bridge_name }}
-            - name: Restart dnsmasq
-              systemd:
-                state: restarted
-                name: dnsmasq
-        - name: Setup iptables rules on Host
-          block:
-            - name: Retrieve interface connected to internet
-              shell: ip route | grep default | cut -d " " -f 5
-              register: interface_connected_to_internet
-            - debug:
-                msg: "{{ interface_connected_to_internet.stdout }}"
-            - name: Allow all VM to access to internet using nat from Host
-              shell: "iptables -t nat -I POSTROUTING -o {{ interface_connected_to_internet.stdout }} -j MASQUERADE"
-            - name: Save iptable rules
-              shell: "service iptables save"
-        - name: Setup Host dnsmasq used for dhcp configuration
-          block:
-            - name: Create {{ bridge_name }} directory
-              file:
-                path: "{{ item }}"
-                state: directory
+                  # '%i' becomes 'virbr10' when running `systemctl start dnsmasq@virbr10.service`
+                  # Remember to run `systemctl daemon-reload` after creating or editing this file.
+
+                  [Unit]
+                  Description=DHCP and DNS caching server for %i.
+                  After=network.target
+
+                  [Service]
+                  ExecStart=/usr/sbin/dnsmasq -k --conf-file=/var/lib/dnsmasq/%i/dnsmasq.conf
+                  ExecReload=/bin/kill -HUP $MAINPID
+                  Restart=on-failure
+                  RestartSec=5
+
+                  [Install]
+                  WantedBy=multi-user.target
                 mode: u=rwx,g=rx,o=rx
-                owner: "root"
-                group: "root"
-              with_items:
-                - "/var/lib/dnsmasq"
-                - "/var/lib/dnsmasq/{{ bridge_name }}"
-            - name: Create {{ bridge_name }} dnsmasq.conf
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/dnsmasq.conf
-                content: |
-                  # Only bind to the virtual bridge. This avoids conflicts with other running
-                  # dnsmasq instances.
-                  except-interface=lo
-                  interface={{ bridge_name }}
-                  bind-dynamic
-
-                  # If using dnsmasq 2.62 or older, remove "bind-dynamic" and "interface" lines
-                  # and uncomment these lines instead:
-                  #bind-interfaces
-                  #listen-address=192.168.100.1
-
-                  # IPv4 addresses to offer to VMs. This should match the chosen subnet.
-                  dhcp-range={{ dhcp_range_start }},{{ dhcp_range_end }}
-
-                  # Set this to at least the total number of addresses in DHCP-enabled subnets.
-                  dhcp-lease-max=1000
-
-                  # File to write DHCP lease information to.
-                  dhcp-leasefile=/var/lib/dnsmasq/{{ bridge_name }}/leases
-                  # File to read DHCP host information from.
-                  dhcp-hostsfile=/var/lib/dnsmasq/{{ bridge_name }}/hostsfile
-                  # Avoid problems with old or broken clients.
-                  dhcp-no-override
-                  # https://www.redhat.com/archives/libvir-list/2010-March/msg00038.html
-                  strict-order
-
-                  # expose dns to use by the dns VM.
-                  # /!\ Not working I do not why... I fix it in dns vm cloud-init
-                  dhcp-option=6,{{ dns_ip }},{{ bridge_ip }}
-
-                  cache-size=10000
-                  log-dhcp
-                  log-queries=extra
-                  log-facility=/var/log/dnsmasq-{{ bridge_name }}.log
-                mode: u=rw,g=r,o=r
                 owner: root
                 group: root
-            - name: Create {{ bridge_name }} hostsfile
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
-                content: |
-                  {{ dns_mac }},{{ dns_ip }}
-                  52:54:00:00:06:11,10.0.6.11
-                mode: u=rw,g=r,o=r
-                owner: root
-                group: root
-            - name: Create {{ bridge_name }} leases
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/leases
-                content: |
-                mode: u=rw,g=r,o=r
-                owner: root
-                group: root
-            - name: Create persistente execution of dnsmasq
-              block:
-                - name: Create service
-                  copy:
-                    dest: /etc/systemd/system/dnsmasq@.service
-                    content: |
-                      # '%i' becomes 'virbr10' when running `systemctl start dnsmasq@virbr10.service`
-                      # Remember to run `systemctl daemon-reload` after creating or editing this file.
-
-                      [Unit]
-                      Description=DHCP and DNS caching server for %i.
-                      After=network.target
-
-                      [Service]
-                      ExecStart=/usr/sbin/dnsmasq -k --conf-file=/var/lib/dnsmasq/%i/dnsmasq.conf
-                      ExecReload=/bin/kill -HUP $MAINPID
-                      Restart=on-failure
-                      RestartSec=5
-
-                      [Install]
-                      WantedBy=multi-user.target
-                    mode: u=rwx,g=rx,o=rx
-                    owner: root
-                    group: root
-                - name: Enable dnsmasq service
-                  shell: systemctl enable dnsmasq@{{ bridge_name }}.service
-                - name: Start dnsmasq service
-                  shell: systemctl start dnsmasq@{{ bridge_name }}.service
-            - name: Should defined dnsmasq be reachable
-              wait_for:
-                host: "{{ bridge_ip }}"
-                port: 53
-                state: drained
-                delay: 10
-      become: true
-      become_user: root
+            - name: Enable dnsmasq service
+              shell: systemctl enable dnsmasq@{{ bridge_name }}.service
+            - name: Start dnsmasq service
+              shell: systemctl start dnsmasq@{{ bridge_name }}.service
+        - name: Should defined dnsmasq be reachable
+          wait_for:
+            host: "{{ bridge_ip }}"
+            port: 53
+            state: drained
+            delay: 10
+  become: true
+  become_user: root

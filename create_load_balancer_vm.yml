@@ -1,6 +1,5 @@
 ---
 - name: Create lb virtual machine
-  hosts: localhost
   vars:
     vm_name: lb
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
@@ -13,15 +12,15 @@
     dns_ip: "10.0.6.10"
     bridge: virbr-okd-cl0
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-  tasks:
-    - name: Get vms defined
+  block:
+    - name: Get virtual machines defined
       virt:
         command: info
         uri: "qemu:///session"
       register: info
     - name: Create {{ vm_name }} virtual machine
       block:
-        - name: Create directories
+        - name: Create {{ vm_name }} virtual machine directories
           file:
             path: "{{ item }}"
             state: directory
@@ -41,7 +40,7 @@
             dest: "{{ images_path }}"
             sha256sum: "520d01c2f2e1ed24cb2f15a4325aa30773930a2961b5484a68cf11b4a415c512"
           when: centos7_cloud_image.stat.exists == False
-        - name: Copy centos7 cloud image from images to {{ vm_name }} vm
+        - name: Copy centos7 cloud image from images to {{ vm_name }} virtual machine
           copy:
             src: "{{ images_path }}/{{ centos7_cloud_image_name }}"
             dest: "{{ vm_path }}/{{ centos7_cloud_image_name }}"

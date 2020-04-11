@@ -1,6 +1,5 @@
 ---
 - name: Add okd cluster netword
-  hosts: localhost
   vars:
     bridge_name: virbr-okd-cl0
     bridge_mac: "52:54:00:00:05:01"
@@ -8,120 +7,118 @@
     dhcp_range_start: "10.0.5.10"
     dhcp_range_end: "10.0.5.254"
     dns_ip: "10.0.6.10"
-  tasks:
-    - name: Add okd cluster network
+  block:
+    - name: Add {{ bridge_name }} virtual bridge
+      copy:
+        dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+        content: |
+          DEVICE="{{ bridge_name }}"
+          BOOTPROTO="static"
+          IPADDR="{{ bridge_ip }}"
+          MACADDR="{{ bridge_mac }}"
+          NETMASK="255.255.255.0"
+          ONBOOT="yes"
+          TYPE="Bridge"
+          NM_CONTROLLED="no"
+    - name: Restart service network
+      systemd:
+        state: restarted
+        name: network
+    - name: Do not bind {{ bridge_name }} into Host system dnsmasq
       block:
-        - name: Add {{ bridge_name }} virtual bridge
+        - name: Create system dnsmaq exclusion for {{ bridge_name }}
           copy:
-            dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+            dest: /etc/dnsmasq.d/{{ bridge_name }}.conf
             content: |
-              DEVICE="{{ bridge_name }}"
-              BOOTPROTO="static"
-              IPADDR="{{ bridge_ip }}"
-              MACADDR="{{ bridge_mac }}"
-              NETMASK="255.255.255.0"
-              ONBOOT="yes"
-              TYPE="Bridge"
-              NM_CONTROLLED="no"
-        - name: Restart service network
+              except-interface={{ bridge_name }}
+        - name: Restart dnsmasq
           systemd:
             state: restarted
-            name: network
-        - name: Do not bind {{ bridge_name }} into Host system dnsmasq
+            name: dnsmasq
+    - name: Setup Host dnsmasq used for dhcp configuration
+      block:
+        - name: Create {{ bridge_name }} directory
+          file:
+            path: "{{ item }}"
+            state: directory
+            mode: u=rwx,g=rx,o=rx
+            owner: "root"
+            group: "root"
+          with_items:
+            - "/var/lib/dnsmasq"
+            - "/var/lib/dnsmasq/{{ bridge_name }}"
+        - name: Create {{ bridge_name }} dnsmasq.conf
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/dnsmasq.conf
+            content: |
+              # Only bind to the virtual bridge. This avoids conflicts with other running
+              # dnsmasq instances.
+              except-interface=lo
+              interface={{ bridge_name }}
+              bind-dynamic
+
+              # If using dnsmasq 2.62 or older, remove "bind-dynamic" and "interface" lines
+              # and uncomment these lines instead:
+              #bind-interfaces
+              #listen-address=192.168.100.1
+
+              # IPv4 addresses to offer to VMs. This should match the chosen subnet.
+              dhcp-range={{ dhcp_range_start }},{{ dhcp_range_end }}
+
+              # Set this to at least the total number of addresses in DHCP-enabled subnets.
+              dhcp-lease-max=1000
+
+              # File to write DHCP lease information to.
+              dhcp-leasefile=/var/lib/dnsmasq/{{ bridge_name }}/leases
+              # File to read DHCP host information from.
+              dhcp-hostsfile=/var/lib/dnsmasq/{{ bridge_name }}/hostsfile
+              # Avoid problems with old or broken clients.
+              dhcp-no-override
+              # https://www.redhat.com/archives/libvir-list/2010-March/msg00038.html
+              strict-order
+
+              # expose dns to use by the dns VM.
+              # /!\ Not working I do not why... I fix it in dns vm cloud-init
+              dhcp-option=6,{{ dns_ip }}
+
+              cache-size=10000
+              log-dhcp
+              log-queries=extra
+              log-facility=/var/log/dnsmasq-{{ bridge_name }}.log
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create {{ bridge_name }} hostsfile
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
+            content: |
+              52:54:00:00:05:57,10.0.5.57
+              52:54:00:00:05:59,10.0.5.59
+              52:54:00:00:05:60,10.0.5.60
+              52:54:00:00:05:61,10.0.5.61
+              52:54:00:00:05:62,10.0.5.62
+              52:54:00:00:05:58,10.0.5.58
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create {{ bridge_name }} leases
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/leases
+            content: |
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
+        - name: Create persistente execution of dnsmasq
           block:
-            - name: Create system dnsmaq exclusion for {{ bridge_name }}
-              copy:
-                dest: /etc/dnsmasq.d/{{ bridge_name }}.conf
-                content: |
-                  except-interface={{ bridge_name }}
-            - name: Restart dnsmasq
-              systemd:
-                state: restarted
-                name: dnsmasq
-        - name: Setup Host dnsmasq used for dhcp configuration
-          block:
-            - name: Create {{ bridge_name }} directory
-              file:
-                path: "{{ item }}"
-                state: directory
-                mode: u=rwx,g=rx,o=rx
-                owner: "root"
-                group: "root"
-              with_items:
-                - "/var/lib/dnsmasq"
-                - "/var/lib/dnsmasq/{{ bridge_name }}"
-            - name: Create {{ bridge_name }} dnsmasq.conf
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/dnsmasq.conf
-                content: |
-                  # Only bind to the virtual bridge. This avoids conflicts with other running
-                  # dnsmasq instances.
-                  except-interface=lo
-                  interface={{ bridge_name }}
-                  bind-dynamic
-
-                  # If using dnsmasq 2.62 or older, remove "bind-dynamic" and "interface" lines
-                  # and uncomment these lines instead:
-                  #bind-interfaces
-                  #listen-address=192.168.100.1
-
-                  # IPv4 addresses to offer to VMs. This should match the chosen subnet.
-                  dhcp-range={{ dhcp_range_start }},{{ dhcp_range_end }}
-
-                  # Set this to at least the total number of addresses in DHCP-enabled subnets.
-                  dhcp-lease-max=1000
-
-                  # File to write DHCP lease information to.
-                  dhcp-leasefile=/var/lib/dnsmasq/{{ bridge_name }}/leases
-                  # File to read DHCP host information from.
-                  dhcp-hostsfile=/var/lib/dnsmasq/{{ bridge_name }}/hostsfile
-                  # Avoid problems with old or broken clients.
-                  dhcp-no-override
-                  # https://www.redhat.com/archives/libvir-list/2010-March/msg00038.html
-                  strict-order
-
-                  # expose dns to use by the dns VM.
-                  # /!\ Not working I do not why... I fix it in dns vm cloud-init
-                  dhcp-option=6,{{ dns_ip }}
-
-                  cache-size=10000
-                  log-dhcp
-                  log-queries=extra
-                  log-facility=/var/log/dnsmasq-{{ bridge_name }}.log
-                mode: u=rw,g=r,o=r
-                owner: root
-                group: root
-            - name: Create {{ bridge_name }} hostsfile
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
-                content: |
-                  52:54:00:00:05:57,10.0.5.57
-                  52:54:00:00:05:59,10.0.5.59
-                  52:54:00:00:05:60,10.0.5.60
-                  52:54:00:00:05:61,10.0.5.61
-                  52:54:00:00:05:62,10.0.5.62
-                  52:54:00:00:05:58,10.0.5.58
-                mode: u=rw,g=r,o=r
-                owner: root
-                group: root
-            - name: Create {{ bridge_name }} leases
-              copy:
-                dest: /var/lib/dnsmasq/{{ bridge_name }}/leases
-                content: |
-                mode: u=rw,g=r,o=r
-                owner: root
-                group: root
-            - name: Create persistente execution of dnsmasq
-              block:
-                - name: Enable dnsmasq service
-                  shell: systemctl enable dnsmasq@{{ bridge_name }}.service
-                - name: Start dnsmasq service
-                  shell: systemctl start dnsmasq@{{ bridge_name }}.service
-            - name: Should defined dnsmasq be reachable
-              wait_for:
-                host: "{{ bridge_ip }}"
-                port: 53
-                state: drained
-                delay: 10
-      become: true
-      become_user: root
+            - name: Enable dnsmasq service
+              shell: systemctl enable dnsmasq@{{ bridge_name }}.service
+            - name: Start dnsmasq service
+              shell: systemctl start dnsmasq@{{ bridge_name }}.service
+        - name: Should defined dnsmasq be reachable
+          wait_for:
+            host: "{{ bridge_ip }}"
+            port: 53
+            state: drained
+            delay: 10
+  become: true
+  become_user: root
