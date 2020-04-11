@@ -477,5 +477,13 @@ podman --log-level=debug pull quay.io/openshift/okd-content@sha256:b9d78a6300ae7
 > alors l'image est bien téléchargé via dns
 > putain cela speed à pleine balle !!!! youou
 
-curl -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
-> TODO verifier la conf au niveau user, podman repositories
+14:25
+3 minutes pour télécharger au boot
+puis cpu à fond pour recuperer les images depuis le registre
+14:30 reboot !
+
+curl -L -k https://localhost:22623/config/master
+curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+
+curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master > reponse_bootstrap_to_master.json
+

@@ -139,11 +139,11 @@
         src: "{{ installer_path }}/{{ item }}"
         dest: "{{ installer_path }}/{{ item }}.original"
       with_items:
-        - "bootstrap.ign"
+        ["bootstrap.ign","worker.ign","master.ign"]
     - name: Update ignition file to add configuration from additional_configurations.ign (which is a json file)
       shell: "./run_update_ignition.py --ign-created-file='{{ installer_path }}/{{ item }}' --additional-configuration-file='{{ installer_path }}/additional_configurations.ign'"
       with_items:
-        - "bootstrap.ign"
+        ["bootstrap.ign","worker.ign","master.ign"]
     - name: Copy ignitions files to be accessible to KVM virtual machines
       copy:
         src: "{{ installer_path }}/{{ item }}"
