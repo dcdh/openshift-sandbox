@@ -20,6 +20,8 @@
         owner: "{{ ansible_user_id }}"
         group: "{{ ansible_user_id }}"
         force: no
+    - name: Resize image to add 25G more space
+      shell: qemu-img resize {{ vms_path }}/bootstrap/{{ fedora_coreos_cloud_image_name }} 25G
     - name: Define bootstrap virtual machine
       virt:
         command: define
