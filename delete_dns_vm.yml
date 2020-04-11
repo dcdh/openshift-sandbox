@@ -1,38 +1,37 @@
 ---
 - name: Delete dns virtual machine
-  hosts: localhost
   vars:
-    - vm_name: dns
-    - dns_vm_ip: 10.0.6.10
-  tasks:
-    - name: Delete vm data
+    vm_name: "dns"
+    ip: "10.0.6.10"
+  block:
+    - name: Delete {{ vm_name }} virtual machine data
       file:
         path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
         state: absent
-    - name: Get vm info
+    - name: Get virtual machines info
       virt:
         command: info
         uri: "qemu:///session"
       register: info
     - debug:
         msg: "{{ info }}"
-    - name: Destroy {{ vm_name }} vm
+    - name: Destroy {{ vm_name }} virtual machine
       virt:
         command: destroy
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.dns is defined and info.dns.state == "running"
-    - name: Undefine {{ vm_name }} vm
+      when: info.dns is defined
+    - name: Undefine {{ vm_name }} virtual machine
       virt:
         command: undefine
         name: "{{ vm_name }}"
         uri: "qemu:///session"
       when: info.dns is defined
-    - name: Remove {{ vm_name }} vm host from known_hosts
+    - name: Remove {{ vm_name }} virtual machine host from known_hosts
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
-        regexp: '^10\.0\.6\.10.*$'
+        regexp: '^{{ ip }}.*$'
     - name: Restore Host NetworkManager.conf
       block:
         - name: Remove dns=none configuration from /etc/NetworkManager/NetworkManager.conf
@@ -43,11 +42,11 @@
             backup: yes
         - name: Unlock /etc/resolv.conf to avoid to be rewritten at startup
           shell: chattr -i /etc/resolv.conf
-        - name: Remove dns VM ip {{ dns_vm_ip }} entry into /etc/resolv.conf
+        - name: Remove dns virtual machine ip {{ ip }} entry into /etc/resolv.conf
           lineinfile:
             path: /etc/resolv.conf
             state: absent
-            regexp: '^nameserver {{ dns_vm_ip }}'
+            regexp: '^nameserver {{ ip }}'
             backup: yes
         - name: Reload NetworkManager service
           shell: systemctl reload NetworkManager

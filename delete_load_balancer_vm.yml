@@ -1,34 +1,34 @@
 ---
-- name: Delete lb virtual machine
-  hosts: localhost
+- name: Delete load balancer virtual machine
   vars:
-    - vm_name: lb
-  tasks:
-    - name: Delete vm data
+    vm_name: "lb"
+    ip: "10.0.5.57"
+  block:
+    - name: Delete {{ vm_name }} virtual machine data
       file:
         path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
         state: absent
-    - name: Get vm info
+    - name: Get virtual machines info
       virt:
         command: info
         uri: "qemu:///session"
       register: info
     - debug:
         msg: "{{ info }}"
-    - name: Destroy {{ vm_name }} vm
+    - name: Destroy {{ vm_name }} virtual machine
       virt:
         command: destroy
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.lb is defined and info.lb.state == "running"
-    - name: Undefine {{ vm_name }} vm
+      when: info.lb is defined
+    - name: Undefine {{ vm_name }} virtual machine
       virt:
         command: undefine
         name: "{{ vm_name }}"
         uri: "qemu:///session"
       when: info.lb is defined
-    - name: Remove {{ vm_name }} vm host from known_hosts
+    - name: Remove {{ vm_name }} virtual machine host from known_hosts
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
-        regexp: '^10\.0\.5\.57.*$'
+        regexp: '^{{ ip }}.*$'

@@ -1,18 +1,15 @@
 ---
 - name: Remove fix bridge permissions for user
-  hosts: localhost
-  tasks:
-    - name: Remove fix bridge permissions for user
-      block:
-        - name: Remove user conf
-          file:
-            path: /etc/qemu-kvm/{{ ansible_user_id }}.conf
-            state: absent
-        - name: Dereference user conf from bridge.xml
-          lineinfile:
-            path: /etc/qemu-kvm/bridge.conf
-            regexp: "include /etc/qemu-kvm/{{ ansible_user_id }}.conf"
-            state: absent
-            backup: yes
-      become: true
-      become_user: root
+  block:
+    - name: Remove user conf
+      file:
+        path: /etc/qemu-kvm/{{ ansible_user_id }}.conf
+        state: absent
+    - name: Dereference user conf from bridge.xml
+      lineinfile:
+        path: /etc/qemu-kvm/bridge.conf
+        regexp: "include /etc/qemu-kvm/{{ ansible_user_id }}.conf"
+        state: absent
+        backup: yes
+  become: true
+  become_user: root

@@ -1,26 +1,21 @@
 ---
 - name: Delete okd cluster network
-  hosts: localhost
   vars:
-    bridge_name: virbr-okd-cl0
-  tasks:
-    - name: Delete okd cluster network
-      block:
-        - name: Delete {{ bridge_name }} interface
-          file:
-            path: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
-            state: absent
-        - name: restart service network
-          systemd:
-            state: restarted
-            name: network
-        - name: Disable dnsmasq service
-          shell: systemctl disable dnsmasq@{{ bridge_name }}.service
-        - name: Delete dnsmasq Host configuration
-          block:
-            - name: Delete {{ bridge_name }} conf
-              file:
-                path: /var/lib/dnsmasq/{{ bridge_name }}
-                state: absent
-      become: true
-      become_user: root
+    bridge_name: "virbr-okd-cl0"
+  block:
+    - name: Delete {{ bridge_name }} interface
+      file:
+        path: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
+        state: absent
+    - name: restart service network
+      systemd:
+        state: restarted
+        name: network
+    - name: Disable dnsmasq service
+      shell: systemctl disable dnsmasq@{{ bridge_name }}.service
+    - name: Delete {{ bridge_name }} Host configuration
+      file:
+        path: /var/lib/dnsmasq/{{ bridge_name }}
+        state: absent
+  become: true
+  become_user: root

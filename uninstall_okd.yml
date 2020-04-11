@@ -1,17 +1,19 @@
 ---
 - name: This playbook uninstall OKD 4 on a local server
   hosts: localhost
-
-
-#- import_playbook: delete_okd_dns_network.yml
-#- import_playbook: remove_fix_bridge_permissions_for_user.yml
-#- import_playbook: delete_dns_vm.yml
-#- import_playbook: delete_container_registry_vm.yml
-
-#- import_playbook: delete_okd_cluster_network.yml
-#- import_playbook: delete_load_balancer_vm.yml
-
   tasks:
+    - name: Delete odk dns network
+      include: delete_okd_dns_network.yml
+    - name: Remove fix bridge permissions for user
+      include: remove_fix_bridge_permissions_for_user.yml
+    - name: Delete dns virtual machine
+      include: delete_dns_vm.yml
+    - name: Delete container registry virtual machine
+      include: delete_container_registry_vm.yml
+    - name: Delete okd cluster network
+      include: delete_okd_cluster_network.yml
+    - name: Delete load balancer virtual machine
+      include: delete_load_balancer_vm.yml
     - name: Uninstall prerequisite okd infrastructure
       include: uninstall_prerequisite_okd_infrastructure.yml
     - name: Delete bootstrap okd virtual machine
