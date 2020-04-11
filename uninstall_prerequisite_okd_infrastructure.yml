@@ -1,9 +1,8 @@
 ---
 - name: Uninstall prerequisite okd infrastructure
-  hosts: localhost
   vars:
     installer_path: "/home/{{ ansible_user_id }}/.okd"
-  tasks:
+  block:
     - name: Clean prerequisite installation
       file:
         path: "{{ item }}"

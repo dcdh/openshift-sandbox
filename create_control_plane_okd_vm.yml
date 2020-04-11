@@ -1,9 +1,9 @@
 ---
-- name: Create bootstrap okd virtual machine
+- name: Create control plane {{ item.index }} virtual machine
   vars:
-    vm_name: "bootstrap"
-    ip: "10.0.5.58"
-    mac: "52:54:00:00:05:58"
+    vm_name: "control_plane_{{ item.index }}"
+    ip: "{{ item.ip }}"
+    mac: "{{ item.mac }}"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
@@ -38,20 +38,22 @@
             disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "{{ mac }}"
             vm_bridge: "virbr-okd-cl0"
-            fw_cfg: "name=opt/com.coreos/config,file=/tmp/bootstrap.ign"
+            fw_cfg: "name=opt/com.coreos/config,file=/tmp/master.ign"
         - name: Start {{ vm_name }} virtual machine
           virt:
             command: start
             name: "{{ vm_name }}"
             autostart: yes
             uri: "qemu:///session"
-        - name: Wait for port 22
+        - name: |
+            Wait for port 22.
           wait_for:
             host: "{{ ip }}"
             port: 22
             state: drained
             delay: 10
-        - name: Add {{ vm_name }} virtual machine to host known_hosts - need to retry as ssh is not available yet after the port 22 is open
+        - name: |
+            Add {{ vm_name }} virtual machine to host known_hosts - need to retry as ssh is not available yet after the port 22 is open.
           shell: |
             while [ -z "$knownHost" ]
             do
@@ -61,6 +63,15 @@
             echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
           args:
             executable: /bin/bash
+        - name: |
+            Wait until unprivilegied {{ ansible_user_id }} can loggin in using ssh to avoid this message:
+#            fatal: [localhost]: FAILED! => {"changed": true, "cmd": "ssh core@10.0.5.59 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'", "delta": "0:00:00.102321", "end": "2020-04-11 19:56:50.886226", "msg": "non-zero return code", "rc": 255, "start": "2020-04-11 19:56:50.783905", "stderr": "\"System is booting up. Unprivileged users are not permitted to log in yet. Please come back later. For technical details, see pam_nologin(8).\"\nAuthentication failed.", "stderr_lines": ["\"System is booting up. Unprivileged users are not permitted to log in yet. Please come back later. For technical details, see pam_nologin(8).\"", "Authentication failed."], "stdout": "", "stdout_lines": []}
+          shell: |
+            ssh {{ ansible_user_id }}@{{ ip }} 'date'
+            while [ $? -ne 0 ]; do
+              sleep 1
+              ssh {{ ansible_user_id }}@{{ ip }} 'date'
+            done
 # TODO nope je dois tester que le container-registry est accessible !!!
     - name: Should {{ vm_name }} virtual machine is well configured
       block:
@@ -88,13 +99,14 @@
                   - "ips_resolved is defined"
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
-    - name: Wait for {{ vm_name }} to be ready to serve control planes configuration
-      uri:
-        url: https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
-        method: GET
-        validate_certs: False
-        follow_redirects: all
-      register: _result
-      until: _result.status == 200
-      retries: 60 # 60 * 60 seconds = 1hour
-      delay: 60 # Every 60 seconds
+    - name: Restart machine-config-daemon-firstboot.service if it has failed to start on {{ vm_name }} virtual machine
+# fatal: [localhost]: FAILED! => {"changed": true, "cmd": "ssh damien@10.0.5.59 'sudo systemctl restart machine-config-daemon-firstboot.service'", "delta": "0:01:18.110876", "end": "2020-04-11 21:22:46.652586", "msg": "non-zero return code", "rc": 1, "start": "2020-04-11 21:21:28.541710", "stderr": "Job for machine-config-daemon-firstboot.service canceled.", "stderr_lines": ["Job for machine-config-daemon-firstboot.service canceled."], "stdout": "", "stdout_lines": []}
+      shell: |
+        isFailed=$(ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-failed machine-config-daemon-firstboot.service')
+        if [[ "$isFailed" == "failed" ]]; then
+          ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
+          while [ $? -ne 0 ]; do
+            sleep 1
+            ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
+          done
+        fi

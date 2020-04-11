@@ -1,5 +1,7 @@
 ---
-# This playbook uninstall OKD 4 on a local server
+- name: This playbook uninstall OKD 4 on a local server
+  hosts: localhost
+
 
 #- import_playbook: delete_okd_dns_network.yml
 #- import_playbook: remove_fix_bridge_permissions_for_user.yml
@@ -9,7 +11,16 @@
 #- import_playbook: delete_okd_cluster_network.yml
 #- import_playbook: delete_load_balancer_vm.yml
 
-#- import_playbook: uninstall_prerequisite_okd_infrastructure.yml
-- import_playbook: delete_bootstrap_okd_vm.yml
+  tasks:
+    - name: Uninstall prerequisite okd infrastructure
+      include: uninstall_prerequisite_okd_infrastructure.yml
+    - name: Delete bootstrap okd virtual machine
+      include: delete_bootstrap_okd_vm.yml
+    - name: Delete control planes virtual machine
+      include: delete_control_plane_okd_vm.yml
+      with_items:
+        - {index: 0, ip: '10.0.5.59'}
+        - {index: 1, ip: '10.0.5.60'}
+        - {index: 2, ip: '10.0.5.61'}
+
 #- import_playbook: delete_worker_0_okd_vm.yml
-#- import_playbook: delete_control_plane_0_okd_vm.yml

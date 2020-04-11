@@ -1,5 +1,6 @@
 ---
-# This playbook deploy OKD 4 on a local server
+- name: This playbook deploy OKD 4 on a local server
+  hosts: localhost
 
 #- import_playbook: add_okd_dns_network.yml
 #- import_playbook: add_fix_bridge_permissions_for_user.yml
@@ -9,7 +10,16 @@
 #- import_playbook: add_okd_cluster_network.yml
 #- import_playbook: create_load_balancer_vm.yml
 
-#- import_playbook: install_prerequisite_okd_infrastructure.yml
-- import_playbook: create_bootstrap_okd_vm.yml
+  tasks:
+    - name: Install prerequisite okd infrastructure
+      include: install_prerequisite_okd_infrastructure.yml
+    - name: Create bootstrap okd virtual machine
+      include: create_bootstrap_okd_vm.yml
+    - name: Create control planes virtual machines
+      include: create_control_plane_okd_vm.yml
+      with_items:
+        - {index: 0, ip: '10.0.5.59', mac: '52:54:00:00:05:59'}
+        - {index: 1, ip: '10.0.5.60', mac: '52:54:00:00:05:60'}
+        - {index: 2, ip: '10.0.5.61', mac: '52:54:00:00:05:61'}
+
 #- import_playbook: create_worker_0_okd_vm.yml
-#- import_playbook: create_control_plane_0_okd_vm.yml

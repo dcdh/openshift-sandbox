@@ -1,8 +1,8 @@
 ---
-- name: Delete bootstrap okd virtual machine
+- name: Delete control plane {{ item.index }} virtual machine
   vars:
-    vm_name: "bootstrap"
-    ip: "10.0.5.58"
+    vm_name: "control_plane_{{ item.index }}"
+    ip: "{{ item.ip }}"
   block:
     - name: Delete {{ vm_name }} virtual machine data
       file:

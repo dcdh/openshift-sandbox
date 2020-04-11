@@ -487,3 +487,26 @@ curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
 
 curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master > reponse_bootstrap_to_master.json
 
+
+
+
+journalctl -u machine-config-daemon-firstboot.service
+
+dig container-registry.ocp4-cluster-001.sandbox.okd
+
+podman --log-level=debug pull quay.io/openshift/okd-content@sha256:9e90d4ae5ce69de2cbde214871ae7c64ed49ae20ceca66ede0802cf7a792af8b
+
+
+PUTAIN potentiellement le dns n'est pas encore up pour lancer le service ...
+
+donc je devrais tester au bout d'un moment si le service est up ...
+
+SINON j'ajoute le DNS ... dans le master.json ...
+
+[systemd]
+Failed Units: 1
+  machine-config-daemon-firstboot.service
+[root@control-plane-0 damien]# systemctl restart machine-config-daemon-firstboot.service
+
+
+TODO : avant de creer le worker je dois m'assurer que la config est accessible ...

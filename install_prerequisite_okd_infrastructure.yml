@@ -1,11 +1,10 @@
 ---
 - name: Install prerequisite okd infrastructure
-  hosts: localhost
   vars:
-    installer_path: "/home/{{ ansible_user_id }}/.okd"
+    fedora_coreos_version: "31.20200310.3.0"
     okd_version: "4.4.0-0.okd-2020-03-28-092308"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
-    fedora_coreos_version: "31.20200310.3.0"
+    installer_path: "/home/{{ ansible_user_id }}/.okd"
     fedora_coreos_cloud_image_name: "fedora-coreos-{{ fedora_coreos_version }}-qemu.x86_64.qcow2"
     fedora_coreos_cloud_image_name_archive: "fedora-coreos-{{ fedora_coreos_version }}-qemu.x86_64.qcow2.xz"
     fedora_coreos_cloud_image_name_archive_sha256: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
@@ -13,7 +12,7 @@
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     domain_crt: "{{ installer_path }}/domain.crt"
     pull_secret: "/home/damien/Téléchargements/pull-secret" # FIXME
-  tasks:
+  block:
     - name: Update / Install needed package for qemu following fail to use fw_cfg https://www.spinics.net/lists/centos/msg166715.html
       yum:
         name: "{{ packages }}"
@@ -80,7 +79,7 @@
             hyperthreading: Enabled
             name: master
             platform: {}
-            replicas: 1
+            replicas: 3
           metadata:
             creationTimestamp: null
             name: ocp4-cluster-001

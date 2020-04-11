@@ -158,6 +158,8 @@
                         mode tcp
                         server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:6443 check
                         server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:6443 check
+                        server      control-plane-1 control-plane-1.ocp4-cluster-001.sandbox.okd:6443 check
+                        server      control-plane-2 control-plane-2.ocp4-cluster-001.sandbox.okd:6443 check
 
                     frontend ocp4_machine_config_server_fe
                         bind :22623
@@ -170,6 +172,8 @@
                         mode tcp
                         server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:22623 check
                         server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:22623 check
+                        server      control-plane-1 control-plane-1.ocp4-cluster-001.sandbox.okd:22623 check
+                        server      control-plane-2 control-plane-2.ocp4-cluster-001.sandbox.okd:22623 check
 
                     frontend ocp4_http_ingress_traffic_fe
                         bind :80
