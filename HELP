@@ -510,3 +510,26 @@ Failed Units: 1
 
 
 TODO : avant de creer le worker je dois m'assurer que la config est accessible ...
+
+- bootstrap
+curl -k -v https://localhost:22623/config/master
+lsof -i -P -n | grep 22623
+machine-c  4167    root    5u  IPv6  40804      0t0  TCP *:22623 (LISTEN)
+ps aux | grep 4167
+root        4167  0.0  0.3 135200 29368 ?        Ssl  19:41   0:00 /usr/bin/machine-config-server bootstrap
+
+./status:105:           ├─machine.slice
+./status:121:             │     └─4167 /usr/bin/machine-config-server bootstrap
+
+
+
+machine-config-daemon
+
+- master
+
+machine-config-daemon
+systemctl start machine.slice
+
+
+TODO: essayer avec la beta ...
+

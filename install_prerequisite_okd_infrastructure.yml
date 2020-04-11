@@ -2,7 +2,7 @@
 - name: Install prerequisite okd infrastructure
   vars:
     fedora_coreos_version: "31.20200310.3.0"
-    okd_version: "4.4.0-0.okd-2020-03-28-092308"
+    okd_version: "4.4.0-0.okd-2020-01-28-022517"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     installer_path: "/home/{{ ansible_user_id }}/.okd"
     fedora_coreos_cloud_image_name: "fedora-coreos-{{ fedora_coreos_version }}-qemu.x86_64.qcow2"
