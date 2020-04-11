@@ -9,7 +9,7 @@
     centos7_cloud_image_url: "https://cloud.centos.org/centos/7/images/{{ centos7_cloud_image_name }}"
     mac: "52:54:00:00:06:10"
     ip: "10.0.6.10"
-    bridge: virbr-okd-dns
+    bridge: virbr-okd-int
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     load_balancer_ip: "10.0.5.57"

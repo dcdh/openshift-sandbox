@@ -128,7 +128,7 @@
             vcpus: 1
             disk_file: "{{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "52:54:00:00:06:11"
-            vm_bridge: "virbr-okd-dns"
+            vm_bridge: "virbr-okd-int"
             fw_cfg: "name=opt/com.coreos/config,file=/tmp/container_registry.ign"
         - name: Start container_registry vm
           virt:

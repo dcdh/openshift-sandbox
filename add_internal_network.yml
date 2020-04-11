@@ -1,13 +1,13 @@
 ---
 - name: |
-    Add okd dns network following documentation available here https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
+    Add host internal network following documentation available here https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
     By default libvirt handle iptable rules automatically. However the iptable is not saved after libvirt modification.
     if the service iptables is restarted all the changed previously done by libvirt is lost. You need to send a SIGUP to the libvert pid to regenerate iptable rules.
     Moreover, I've got an issue - due to iptable rules - regarding the intra communication between guests. One is able to ping the other, and the other is not allowed to ping one :(
     So I decided to provide my own custom setup following the previous documentation.
   vars:
     default_network_name: default
-    bridge_name: virbr-okd-dns
+    bridge_name: virbr-okd-int
     bridge_mac: "52:54:00:00:06:01"
     bridge_ip: "10.0.6.1"
     dns_mac: "52:54:00:00:06:10"

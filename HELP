@@ -125,16 +125,16 @@ dans le cluster okd !!! partie dnsmasq
 Rajouter comme configuration
 
 
-touch /etc/dnsmasq.d/virbr-okd-dns.conf && \
-echo "except-interface=virbr-okd-dns" >> /etc/dnsmasq.d/virbr-okd-dns.conf && \
+touch /etc/dnsmasq.d/virbr-okd-int.conf && \
+echo "except-interface=virbr-okd-int" >> /etc/dnsmasq.d/virbr-okd-int.conf && \
 systemctl restart dnsmasq
 
 service dnsmasq restart
 
 journalctl -u dnsmasq
 
-iptables -A INPUT -i virbr-okd-dns -p udp -m udp -m multiport --dports 53,67 -j ACCEPT && \
-  iptables -A INPUT -i virbr-okd-dns -p tcp -m tcp -m multiport --dports 53,67 -j ACCEPT
+iptables -A INPUT -i virbr-okd-int -p udp -m udp -m multiport --dports 53,67 -j ACCEPT && \
+  iptables -A INPUT -i virbr-okd-int -p tcp -m tcp -m multiport --dports 53,67 -j ACCEPT
 
 
 iptables -t nat -I POSTROUTING -o wlp82s0 -j MASQUERADE
@@ -143,7 +143,7 @@ iptables -t nat -I POSTROUTING -o wlp82s0 -j MASQUERADE
 
 ip neighbor
 
-dnsmasq --conf-file=/var/lib/dnsmasq/virbr-okd-dns/dnsmasq.conf --pid-file=/var/run/virbr-okd-dns.pid
+dnsmasq --conf-file=/var/lib/dnsmasq/virbr-okd-int/dnsmasq.conf --pid-file=/var/run/virbr-okd-int.pid
 
 > dnsmasq   10179 nobody    7u  IPv4 117760      0t0  TCP 10.0.6.1:53 (LISTEN)
 Youpi !!!
@@ -160,7 +160,7 @@ Youpi !!!
                               pid-file=/var/run/libvirt/network/okd-dns0.pid
                               except-interface=lo
                               bind-dynamic
-                              interface=virbr-okd-dns
+                              interface=virbr-okd-int
                               dhcp-range=10.0.6.10,10.0.6.254
                               dhcp-no-override
                               dhcp-authoritative
