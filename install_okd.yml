@@ -10,6 +10,6 @@
 #- import_playbook: create_load_balancer_vm.yml
 
 #- import_playbook: install_prerequisite_okd_infrastructure.yml
-#- import_playbook: create_bootstrap_okd_vm.yml
+- import_playbook: create_bootstrap_okd_vm.yml
 #- import_playbook: create_worker_0_okd_vm.yml
 #- import_playbook: create_control_plane_0_okd_vm.yml

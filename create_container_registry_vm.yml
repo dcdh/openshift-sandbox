@@ -2,11 +2,13 @@
 - name: Create container_registry okd virtual machine
   hosts: localhost
   vars:
-    images_path: "/home/{{ ansible_user_id }}/.okd/images"
+    installer_path: "/home/{{ ansible_user_id }}/.okd"
+    images_path: "{{ installer_path }}/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
-    vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+    vms_path: "{{ installer_path }}/vms"
     ip: "10.0.6.11"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+    dns_name: container-registry.ocp4-cluster-001.sandbox.okd
   tasks:
     - name: Get vms defined
       virt:
@@ -35,6 +37,13 @@
             We will not used the last version 2 of docker registry to avoid this bug: https://github.com/docker/distribution-library-image/issues/89
             Instead we fix it to version 2.6
           block:
+            - name: |
+                Setup container_registry security
+                https://www.openshift.com/blog/openshift-4-2-disconnected-install
+                I do not use the htpasswd authentication as I do not need it yet
+              block:
+                - name: Generate certificats
+                  shell: openssl req -newkey rsa:4096 -nodes -sha256 -subj "/C=FR/ST=Paris/L=Paris/O=Organisation/CN={{ dns_name }}" -keyout {{ installer_path }}/domain.key -x509 -days 36500 -out {{ installer_path }}/domain.crt
             - name: Define container_registry fcc file
               copy:
                 dest: /tmp/container_registry.fcc
@@ -52,6 +61,18 @@
                         groups: [ sudo, docker ]
                   storage:
                     files:
+                      - path: /opt/certs/domain.crt
+                        overwrite: true
+                        contents:
+                          inline: |
+                            {{ lookup('file',{{ installer_path }}/domain.crt) }}
+                        mode: 0644
+                      - path: /opt/certs/domain.key
+                        overwrite: true
+                        contents:
+                          inline: |
+                            {{ lookup('file', {{ installer_path }}/domain.key) }}
+                        mode: 0644
                       - path: /etc/containers/registries.conf
                         overwrite: true
                         contents:
@@ -60,7 +81,7 @@
                             registries = ['docker.io', 'registry.fedoraproject.org', 'registry.access.redhat.com', 'registry.centos.org', 'quay.io']
 
                             [registries.insecure]
-                            registries = ['container-registry.ocp4-cluster-001.sandbox.okd']
+                            registries = []
 
                             [registries.block]
                             registries = []
@@ -78,9 +99,14 @@
                           TimeoutStartSec=0
                           ExecStartPre=-/usr/bin/mkdir -p /var/lib/registry
                           ExecStartPre=-/bin/podman pull docker.io/library/registry:2.6
-                          ExecStart=/bin/podman run --privileged --name registry -p 80:5000 -v /var/lib/registry:/var/lib/registry --restart=always registry:2.6
+                          ExecStart=/bin/podman run --privileged --name registry -p 443:5000 \
+                                      -v /var/lib/registry:/var/lib/registry:z \
+                                      -v /opt/certs:/certs:z \
+                                      -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+                                      -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+                                      --restart=always registry:2.6
 
-                          ExecStop=/bin/podman stop registry
+                          ExecStop=/bin/podman rm -f registry
 
                           [Install]
                           WantedBy=multi-user.target
@@ -172,10 +198,10 @@
         done
       args:
         executable: /bin/bash
-    - name: Wait for port 80
+    - name: Wait for port 443
       wait_for:
         host: container-registry.ocp4-cluster-001.sandbox.okd
-        port: 80
+        port: 443
         state: drained
         delay: 2
     - name: Pull images to container registry. It can be long as at least 7Gb of data should be downloaded
@@ -295,7 +321,8 @@
     - name: Check repository "openshift/okd-content" exists
       block:
         - name: Get list of repositories
-          shell: curl http://container-registry.ocp4-cluster-001.sandbox.okd:80/v2/_catalog
+# TODO faire le test depuis bootstrap
+          shell: curl -k https://container-registry.ocp4-cluster-001.sandbox.okd:443/v2/_catalog
           register: repositories
         - debug:
             msg: "{{ repositories }}"

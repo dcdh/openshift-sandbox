@@ -13,7 +13,7 @@
         - "/tmp/worker.ign"
         - "/tmp/master.ign"
         - "{{ installer_path }}/additional_configurations.fcc"
-        - "{{ installer_path }}/additional_configurations.json"
+        - "{{ installer_path }}/additional_configurations.ign"
         - "{{ installer_path }}/bootstrap.*"
         - "{{ installer_path }}/worker.*"
         - "{{ installer_path }}/master.*"

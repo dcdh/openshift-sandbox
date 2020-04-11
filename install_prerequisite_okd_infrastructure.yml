@@ -11,6 +11,7 @@
     fedora_coreos_cloud_image_name_archive_sha256: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+    domain_crt: "{{ installer_path }}/domain.crt"
     pull_secret: "/home/damien/Téléchargements/pull-secret" # FIXME
   tasks:
     - name: Update / Install needed package for qemu following fail to use fw_cfg https://www.spinics.net/lists/centos/msg166715.html
@@ -61,7 +62,9 @@
       shell:
         cmd: xz -v -d {{ images_path }}/{{ fedora_coreos_cloud_image_name_archive }}
       when: fedora_coreos_cloud_image.stat.exists == False
-    - name: Create install-config.yaml
+    - name: |
+        Create install-config.yaml
+        Documentation can be found here: https://github.com/openshift/installer/blob/master/docs/user/customization.md
       copy:
         dest: "{{ installer_path }}/{{ item }}"
         content: |
@@ -92,6 +95,12 @@
             none: {}
           pullSecret: '{{ lookup('file', pull_secret) }}'
           sshKey: '{{ lookup('file', ssh_public_key) }}'
+          additionalTrustBundle: |
+            {{ lookup('file', domain_crt) | indent(width=2, indentfirst=False) }}
+          imageContentSources:
+          - mirrors:
+            - container-registry.ocp4-cluster-001.sandbox.okd/openshift
+            source: quay.io/openshift
       with_items:
         ["install-config.yaml","install-config.yaml.bak"]
     - name: Create manifests
@@ -109,7 +118,7 @@
         cmd: "{{ installer_path }}/openshift-install create ignition-configs --dir {{ installer_path }}"
       args:
         executable: /bin/bash
-    - name: Update ingitions file to define users and registry configuration
+    - name: Update ignitions file to add users
       block:
         - name: Define additional configuration fcc file to inject
           copy:
@@ -119,27 +128,10 @@
               version: 1.0.0
               passwd:
                 users:
-                  - name: core
-                    ssh_authorized_keys:
-                      - "{{ lookup('file', ssh_public_key) }}"
                   - name: {{ ansible_user_id }}
                     ssh_authorized_keys:
                       - "{{ lookup('file', ssh_public_key) }}"
                     groups: [ sudo, docker ]
-              storage:
-                files:
-                  - path: /etc/containers/registries.conf
-                    overwrite: true
-                    contents:
-                      inline: |
-                        [[registry]]
-                        prefix = "quay.io/openshift"
-                        location = "quay.io/openshift"
-                        mirror-by-digest-only = true
-
-                          [[registry.mirror]]
-                          location = "container-registry.ocp4-cluster-001.sandbox.okd/openshift"
-                          insecure = true
         - name: Generate additional configuration ignition file
           shell: "/bin/podman run -i --rm quay.io/coreos/fcct:release --pretty --strict < {{ installer_path }}/additional_configurations.fcc > {{ installer_path }}/additional_configurations.ign"
     - name: Create backup before updating them using additional configuration
@@ -147,11 +139,11 @@
         src: "{{ installer_path }}/{{ item }}"
         dest: "{{ installer_path }}/{{ item }}.original"
       with_items:
-        ["bootstrap.ign","worker.ign","master.ign"]
+        - "bootstrap.ign"
     - name: Update ignition file to add configuration from additional_configurations.ign (which is a json file)
       shell: "./run_update_ignition.py --ign-created-file='{{ installer_path }}/{{ item }}' --additional-configuration-file='{{ installer_path }}/additional_configurations.ign'"
       with_items:
-        ["bootstrap.ign","worker.ign","master.ign"]
+        - "bootstrap.ign"
     - name: Copy ignitions files to be accessible to KVM virtual machines
       copy:
         src: "{{ installer_path }}/{{ item }}"

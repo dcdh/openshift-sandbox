@@ -395,8 +395,7 @@ putain mes images sont préfixé par quay.io !!!!!
 
 
 systemctl status podman-registry.service
-journalctl -u podman-registry.service
-journalctl -p err
+000journalctl -p err
 
 systemctl is-active --quiet podman-registry.service
 
@@ -467,3 +466,16 @@ mv jq /usr/local/bin
 
 
 sudo yum install python3
+
+-----------------------
+TODO: regenerer les certificats : les redeposser dans le registry, regenerer les fichier ignition et relancer l'installation de la bootsrap
+
+
+ssh damien@10.0.5.58
+curl -k https://container-registry.ocp4-cluster-001.sandbox.okd:443/v2/_catalog
+podman --log-level=debug pull quay.io/openshift/okd-content@sha256:b9d78a6300ae7d414aa2e4cb3353416d1c12c28ca2fb4b8874ad23c2937e4ccc
+> alors l'image est bien téléchargé via dns
+> putain cela speed à pleine balle !!!! youou
+
+curl -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+> TODO verifier la conf au niveau user, podman repositories

@@ -10,6 +10,6 @@
 #- import_playbook: delete_load_balancer_vm.yml
 
 #- import_playbook: uninstall_prerequisite_okd_infrastructure.yml
-#- import_playbook: delete_bootstrap_okd_vm.yml
+- import_playbook: delete_bootstrap_okd_vm.yml
 #- import_playbook: delete_worker_0_okd_vm.yml
 #- import_playbook: delete_control_plane_0_okd_vm.yml
