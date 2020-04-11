@@ -57,15 +57,16 @@ In the following part we will install an instance of OKD compound of :
 This installation is not high available as if the control plane, or the worker fails the cluster will fail too.
 The main objective is to run a local instance as a testing purpose.
 
-| Machine       | CPU | RAM  | Storage | OS            | static IP  | mac               | DNS                                          |
-| ------------- | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :--------------------------------------------|
-| DNS           |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.ocp4-cluster-001.sandbox.okd             |
-| Load Balancer |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.ocp4-cluster-001.sandbox.okd              |
-| Control Plane |   1 | 24GB |    60GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.ocp4-cluster-001.sandbox.okd |
-| Control Plane |   1 | 24GB |    60GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.ocp4-cluster-001.sandbox.okd |
-| Control Plane |   1 | 24GB |    60GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.ocp4-cluster-001.sandbox.okd |
-| Worker        |   4 | 24GB |    60GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.ocp4-cluster-001.sandbox.okd       |
-| Bootstrap     |   1 |  4GB |    40GB | Fedora CoreOS |  10.0.5.58 | 52:54:00:00:05:58 | bootstrap.ocp4-cluster-001.sandbox.okd       |
+| Machine            | CPU | RAM  | Storage | OS            | static IP  | mac               | DNS                                             |
+| ------------------ | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :-----------------------------------------------|
+| DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.ocp4-cluster-001.sandbox.okd                |
+| Container Registry |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.6.11 | 52:54:00:00:06:11 | container-registry.ocp4-cluster-001.sandbox.okd |
+| Load Balancer      |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.ocp4-cluster-001.sandbox.okd                 |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.ocp4-cluster-001.sandbox.okd    |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.ocp4-cluster-001.sandbox.okd    |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.ocp4-cluster-001.sandbox.okd    |
+| Worker             |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.ocp4-cluster-001.sandbox.okd          |
+| Bootstrap          |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.58 | 52:54:00:00:05:58 | bootstrap.ocp4-cluster-001.sandbox.okd          |
 
 ## Networks
 
