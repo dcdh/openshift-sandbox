@@ -250,22 +250,22 @@
         - name:  Should {{ item.vm_name }} virtual machine resolved full qualified domain name entries
           include: dns_fqdn_vm_resolution.yml
           with_items:
-            - {vm_name : vm_name, ip_to_resolve: '10.0.6.10', fqdn: 'dns.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.10', fqdn: 'container-registry.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'lb.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'api.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'api-int.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'console-openshift-console.apps.lab.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'oauth-openshift.apps.lab.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.58', fqdn: 'bootstrap.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.59', fqdn: 'control-plane-0.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.59', fqdn: 'etcd-0.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.60', fqdn: 'control-plane-1.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.60', fqdn: 'etcd-1.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.61', fqdn: 'control-plane-2.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.61', fqdn: 'etcd-2.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.62', fqdn: 'compute-0.sandbox.okd.local'}
-            - {vm_name : vm_name, ip_to_resolve: '10.0.5.57', fqdn: 'test.apps.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.6.10', fqdn: 'dns.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.10', fqdn: 'container-registry.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'lb.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'api.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'api-int.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'console-openshift-console.apps.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'oauth-openshift.apps.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.58', fqdn: 'bootstrap.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.59', fqdn: 'control-plane-0.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.59', fqdn: 'etcd-0.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.60', fqdn: 'control-plane-1.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.60', fqdn: 'etcd-1.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.61', fqdn: 'control-plane-2.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.61', fqdn: 'etcd-2.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.62', fqdn: 'compute-0.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'test.apps.sandbox.okd.local'}
 # TODO check SRV cf https://support.microsoft.com/fr-fr/help/816587/how-to-verify-that-srv-dns-records-have-been-created-for-a-domain-cont
         - name: Should external dns resolution is working in {{ vm_name }} virtual machine
           block:
