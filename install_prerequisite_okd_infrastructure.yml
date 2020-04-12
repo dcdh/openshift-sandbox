@@ -69,7 +69,7 @@
         content: |
           ---
           apiVersion: v1
-          baseDomain: sandbox.okd
+          baseDomain: okd.local
           compute:
           - hyperthreading: Enabled
             name: worker
@@ -82,7 +82,7 @@
             replicas: 3
           metadata:
             creationTimestamp: null
-            name: ocp4-cluster-001
+            name: sandbox
           networking:
             clusterNetwork:
             - cidr: 10.128.0.0/14
