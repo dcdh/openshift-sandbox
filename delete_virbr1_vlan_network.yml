@@ -17,5 +17,15 @@
       file:
         path: /var/lib/dnsmasq/{{ bridge_name }}
         state: absent
+    - name: Flush iptable entries
+      block:
+        - name: Remove forward all input in interface {{ bridge_name }}
+          shell: iptables -D FORWARD --in-interface {{ bridge_name }} -j ACCEPT
+          ignore_errors: yes
+        - name: Remove forward all output in interface {{ bridge_name }}
+          shell: iptables -D FORWARD --out-interface {{ bridge_name }} -j ACCEPT
+          ignore_errors: yes
+        - name: Save iptable rules
+          shell: "service iptables save"
   become: true
   become_user: root

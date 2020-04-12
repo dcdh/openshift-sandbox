@@ -35,6 +35,42 @@
           systemd:
             state: restarted
             name: dnsmasq
+    - name: Forward {{ bridge_name }} connection
+      block:
+        - name: Enable IP forwarding / masquerading
+          block:
+            - name: Enable on the fly IP forwarding / masquerading
+              shell: sysctl -w net.ipv4.ip_forward=1
+            - name: Persist IP forwarding / masquerading
+              copy:
+                dest: /etc/sysctl.d/99-openshift.conf
+                content: |
+                  net.ipv4.ip_forward=1
+                mode: u=rw,g=r,o=r
+                owner: root
+                group: root
+            - name: Reboot sysctl
+              shell: sysctl -p
+        - name: Add firewall rules to allow ip forwarding / masquerading
+          block:
+            - name: Setup iptables rules on Host to allow SSH to connect on the fly instead of hanging ...
+              block:
+                - name: Forward all input in interface {{ bridge_name }}
+                  shell: "iptables -I FORWARD 1 --in-interface {{ bridge_name }} -j ACCEPT"
+                - name: Forward all output out interface {{ bridge_name }}
+                  shell: "iptables -I FORWARD 1 --out-interface {{ bridge_name }} -j ACCEPT"
+            - name: Allow all virtual machine connected to bridge {{ bridge_name }} to access to internet using nat from Host
+              block:
+                - name: Retrieve interface connected to internet
+                  shell: ip route | grep default | cut -d " " -f 5
+                  register: interface_connected_to_internet
+                - debug:
+                    msg: "{{ interface_connected_to_internet.stdout }}"
+                - name: Bind interface {{ bridge_name }} with {{ interface_connected_to_internet.stdout }}
+                  shell: "iptables -t nat -I POSTROUTING -o {{ interface_connected_to_internet.stdout }} -j MASQUERADE"
+                - name: Save iptable rules
+                  shell: "service iptables save"
+#        - name: Should {{ bridge_name }} be forwarded HOW TO TEST ???
     - name: Setup Host dnsmasq used for dhcp configuration
       block:
         - name: Create {{ bridge_name }} directory
