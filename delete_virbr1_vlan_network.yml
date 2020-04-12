@@ -1,7 +1,7 @@
 ---
-- name: Delete okd cluster 001 network
+- name: Delete virbr1 vlan network
   vars:
-    bridge_name: "virbr-okd-cl001"
+    bridge_name: "virbr1"
   block:
     - name: Delete {{ bridge_name }} interface
       file:

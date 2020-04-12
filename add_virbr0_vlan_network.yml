@@ -1,5 +1,6 @@
 ---
 - name: |
+    Add virbr0 vlan network for dns virtual machine
     Add host okd clusters network following documentation available here https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
     By default libvirt handle iptable rules automatically. However the iptable is not saved after libvirt modification.
     if the service iptables is restarted all the changed previously done by libvirt is lost. You need to send a SIGUP to the libvert pid to regenerate iptable rules.
@@ -7,7 +8,7 @@
     So I decided to provide my own custom setup following the previous documentation.
   vars:
     default_network_name: default
-    bridge_name: "virbr-okd-cls"
+    bridge_name: "virbr0"
     bridge_mac: "52:54:00:00:06:01"
     bridge_ip: "10.0.6.1"
     dns_mac: "52:54:00:00:06:10"
@@ -30,7 +31,7 @@
         command: undefine
         name: "{{ default_network_name }}"
       when: default_network_name|string in networks.list_nets
-    - name: Add {{ bridge_name }} virtual bridge
+    - name: Add {{ bridge_name }} virtual lan bridge
       copy:
         dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
         content: |
@@ -126,7 +127,6 @@
             dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
             content: |
               {{ dns_mac }},{{ dns_ip }}
-              52:54:00:00:06:11,10.0.6.11
             mode: u=rw,g=r,o=r
             owner: root
             group: root

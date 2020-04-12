@@ -1,14 +1,14 @@
 ---
-- name: Add okd cluster 001 netword
+- name: Add virbr1 vlan network for sandbox okd cluster virtual machines
   vars:
-    bridge_name: "virbr-okd-cl001"
+    bridge_name: "virbr1"
     bridge_mac: "52:54:00:00:05:01"
     bridge_ip: "10.0.5.1"
     dhcp_range_start: "10.0.5.10"
     dhcp_range_end: "10.0.5.254"
     dns_ip: "10.0.6.10"
   block:
-    - name: Add {{ bridge_name }} virtual bridge
+    - name: Add {{ bridge_name }} virtual lan bridge
       copy:
         dest: /etc/sysconfig/network-scripts/ifcfg-{{ bridge_name }}
         content: |
@@ -92,6 +92,7 @@
           copy:
             dest: /var/lib/dnsmasq/{{ bridge_name }}/hostsfile
             content: |
+              52:54:00:00:05:10,10.0.5.10
               52:54:00:00:05:57,10.0.5.57
               52:54:00:00:05:59,10.0.5.59
               52:54:00:00:05:60,10.0.5.60

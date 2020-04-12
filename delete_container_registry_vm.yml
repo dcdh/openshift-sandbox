@@ -2,7 +2,7 @@
 - name: Delete container registry virtual machine
   vars:
     vm_name: "container_registry"
-    ip: "10.0.6.11"
+    ip: "10.0.5.10"
   block:
     - name: Delete {{ vm_name }} virtual machine data
       file:

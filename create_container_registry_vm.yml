@@ -5,7 +5,7 @@
     images_path: "{{ installer_path }}/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
     vms_path: "{{ installer_path }}/vms"
-    ip: "10.0.6.11"
+    ip: "10.0.5.10"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: "container-registry.sandbox.okd.local"
     domain_crt: "{{ installer_path }}/domain.crt"
@@ -129,8 +129,8 @@
             memory: 8192
             vcpus: 1
             disk_file: "{{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }}"
-            vm_mac: "52:54:00:00:06:11"
-            vm_bridge: "virbr-okd-cls"
+            vm_mac: "52:54:00:00:05:10"
+            vm_bridge: "virbr1"
             fw_cfg: "name=opt/com.coreos/config,file=/tmp/container_registry.ign"
         - name: Start container_registry vm
           virt:
