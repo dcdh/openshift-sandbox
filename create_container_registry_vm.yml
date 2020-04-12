@@ -164,7 +164,7 @@
                 insertafter: EOF
                 line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
-      when: vm_name in vms.list_vms
+      when: vm_name not in vms.list_vms
 
     - name: Should {{ vm_name }} virtual machine is well configured
       block:

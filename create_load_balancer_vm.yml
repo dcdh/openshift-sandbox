@@ -282,7 +282,7 @@
               assert:
                 that:
                   - "'active' == is_active.stdout"
-      when: vm_name in vms.list_vms
+      when: vm_name not in vms.list_vms
 
     - name: Should {{ vm_name }} virtual machine is well configured
       block:

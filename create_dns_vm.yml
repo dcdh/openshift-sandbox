@@ -12,7 +12,6 @@
     bridge: "virbr0"
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-    load_balancer_ip: "10.0.5.57"
     dns_name: "dns.okd.local"
   block:
     - name: List virtual machines
@@ -217,17 +216,6 @@
               assert:
                 that:
                   - "'active' == is_active.stdout"
-        - name: Check local resolution in {{ vm_name }} VM
-          block:
-            - name: Execute local resolution in {{ vm_name }} VM
-              shell: ssh centos@{{ ip }} 'dig apps.sandbox.okd.local +short'
-              register: ip_resolved
-            - debug:
-                msg: "{{ ip_resolved }}"
-            - name: Ensure ip resolved to load balancer virtual machine ip
-              assert:
-                that:
-                  - "'{{ load_balancer_ip }}' == ip_resolved.stdout"
 
         - name: |
             Add dns entry into Host to be able to access virtual machine in '.sandbox.okd'.
@@ -255,7 +243,7 @@
               shell: systemctl reload NetworkManager
           become: true
           become_user: root
-      when: vm_name in vms.list_vms
+      when: vm_name not in vms.list_vms
 
     - name: Should {{ vm_name }} virtual machine is well configured
       block:
