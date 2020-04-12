@@ -171,7 +171,7 @@
         - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
           block:
             - name: Execute dns virtual machine resolution in {{ vm_name }} VM
-              shell: ssh centos@{{ ip }} 'dig dns.okd.local +short'
+              shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig dns.okd.local +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
