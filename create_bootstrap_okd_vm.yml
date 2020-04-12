@@ -54,7 +54,7 @@
             delay: 10
         - name: |
             Add {{ vm_name }} virtual machine to host known_hosts - need to retry as ssh is not available yet after the port 22 is open
-            On fedora coreos an empty response can be returned :(
+            An empty valide response can be returned :(
           block:
             - name: Retrieve dns virtual machine public key
               shell: ssh-keyscan -t ssh-rsa {{ ip }}

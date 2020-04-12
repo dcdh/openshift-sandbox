@@ -179,12 +179,14 @@
             port: 22
             state: drained
             delay: 10
-        - name: Add {{ vm_name }} host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+        - name: |
+            Add {{ vm_name }} host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+            An empty valide response can be returned :(
           block:
             - name: Retrieve dns virtual machine public key
               shell: ssh-keyscan -t ssh-rsa {{ ip }}
               register: task_result
-              until: task_result.rc == 0
+              until: task_result.rc == 0 and task_result.stdout != ''
               retries: 120
               delay: 5
             - debug:
