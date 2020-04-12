@@ -119,8 +119,8 @@
                     log-facility=/var/log/dnsmasq.log
                   path: /run/myconf/dnsmasq.conf
                 - content: |
-                    10.0.6.11 container-registry.sandbox.okd.local
                     10.0.6.10 dns.okd.local
+                    10.0.5.10 container-registry.sandbox.okd.local
                     10.0.5.57 lb.sandbox.okd.local  api.sandbox.okd.local  api-int.sandbox.okd.local
                     10.0.5.58 bootstrap.sandbox.okd.local
                     10.0.5.59 control-plane-0.sandbox.okd.local  etcd-0.sandbox.okd.local
