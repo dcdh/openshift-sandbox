@@ -214,7 +214,7 @@
       shell: ssh {{ ansible_user_id }}@{{ ip }} 'skopeo copy docker://{{ item.imageId }} docker://container-registry.ocp4-clusters.sandbox.okd/{{ item.registryMirrorImage }} --dest-tls-verify=false'
       register: task_result
       until: task_result.rc == 0
-      retries: 10
+      retries: 100
       delay: 1
       loop:
         - {name: 'aws-machine-controllers'                        , imageId: 'quay.io/openshift/okd-content@sha256:d7012291e9c5865ace303c2b6c35be3711e73d652ae90d2e5467bed5f41c4c0c', registryMirrorImage: 'openshift/okd-content'}
