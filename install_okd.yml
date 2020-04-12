@@ -4,14 +4,14 @@
   tasks:
     - name: Add virbr0 vlan for dns virtual machine
       include: add_virbr0_vlan_network.yml
+    - name: Add virbr1 vlan for sandbox okd cluster virtual machines
+      include: add_virbr1_vlan_network.yml
     - name: Add fix bridge permissions for user
       include: add_fix_bridge_permissions_for_user.yml
     - name: Create dns virtual machine
       include: create_dns_vm.yml
     - name: Create container registry okd virtual machine
       include: create_container_registry_vm.yml
-    - name: Add virbr1 vlan for sandbox okd cluster virtual machines
-      include: add_virbr1_vlan_network.yml
     - name: Create lb virtual machine
       include: create_load_balancer_vm.yml
     - name: Install prerequisite okd infrastructure
