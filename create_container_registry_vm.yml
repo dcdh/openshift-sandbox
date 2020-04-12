@@ -1,6 +1,7 @@
 ---
-- name: Create container_registry okd virtual machine
+- name: Create container registry okd virtual machine
   vars:
+    vm_name: "container-registry.sandbox.okd.local"
     installer_path: "/home/{{ ansible_user_id }}/.okd"
     images_path: "{{ installer_path }}/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
@@ -11,41 +12,41 @@
     domain_crt: "{{ installer_path }}/domain.crt"
     domain_key: "{{ installer_path }}/domain.key"
   block:
-    - name: Get vms defined
+    - name: List virtual machines
       virt:
-        command: info
+        command: list_vms
         uri: "qemu:///session"
-      register: info
-    - name: Create container_registry virtual machine
+      register: vms
+    - name: Create {{ vm_name }} virtual machine
       block:
         - name: Create {{ vm_name }} virtual machine directories
           file:
-            path: "{{ vms_path }}/container_registry"
+            path: "{{ vms_path }}/{{ vm_name }}"
             state: directory
             owner: "{{ ansible_user_id }}"
             group: "{{ ansible_user_id }}"
         - name: Copy fedora coreos cloud image from images to {{ vm_name }} virtual machine directory
           copy:
             src: "{{ images_path }}/{{ fedora_coreos_cloud_image_name }}"
-            dest: "{{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }}"
+            dest: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             owner: "{{ ansible_user_id }}"
             group: "{{ ansible_user_id }}"
             force: no
         - name: Resize image to add 25G more space. At least 7Go needed for /sysroot
-          shell: qemu-img resize {{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }} 25G
+          shell: qemu-img resize {{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }} 25G
         - name: |
-            Create container_registry ignition file.
+            Create {{ vm_name }} ignition file.
             We will not used the last version 2 of docker registry to avoid this bug: https://github.com/docker/distribution-library-image/issues/89
             Instead we fix it to version 2.6
           block:
             - name: |
-                Setup container_registry security
+                Setup {{ vm_name }} security
                 https://www.openshift.com/blog/openshift-4-2-disconnected-install
                 I do not use the htpasswd authentication as I do not need it yet
               block:
                 - name: Generate certificats
                   shell: openssl req -newkey rsa:4096 -nodes -sha256 -subj "/C=FR/ST=Paris/L=Paris/O=Organisation/CN={{ dns_name }}" -keyout {{ installer_path }}/domain.key -x509 -days 36500 -out {{ installer_path }}/domain.crt
-            - name: Define container_registry fcc file
+            - name: Define {{ vm_name }} fcc file
               copy:
                 dest: /tmp/container_registry.fcc
                 content: |
@@ -118,24 +119,24 @@
               shell: /bin/podman run -i --rm quay.io/coreos/fcct:release --pretty --strict < /tmp/container_registry.fcc > /tmp/container_registry.ign
           become: true
           become_user: root
-        - name: Define container_registry virtual machine
+        - name: Define {{ vm_name }} virtual machine
           virt:
             command: define
-            name: "container_registry"
+            name: "{{ vm_name }}"
             xml: '{{ lookup("template", "templates/vm.xml.j2") }}'
             uri: "qemu:///session"
           vars:
-            name: "container_registry"
+            name: "{{ vm_name }}"
             memory: 8192
             vcpus: 1
-            disk_file: "{{ vms_path }}/container_registry/{{ fedora_coreos_cloud_image_name }}"
+            disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "52:54:00:00:05:10"
             vm_bridge: "virbr1"
             fw_cfg: "name=opt/com.coreos/config,file=/tmp/container_registry.ign"
-        - name: Start container_registry vm
+        - name: Start {{ vm_name }} vm
           virt:
             command: start
-            name: "container_registry"
+            name: "{{ vm_name }}"
             autostart: yes
             uri: "qemu:///session"
         - name: Wait for port 22
@@ -145,7 +146,7 @@
             state: drained
             delay: 10
         - name: |
-            Add container_registry host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+            Add {{ vm_name }} host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
             An empty valide response can be returned :(
           block:
             - name: Retrieve dns virtual machine public key
@@ -162,8 +163,8 @@
                 insertafter: EOF
                 line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
-      when: info.container_registry is not defined
-    - name: Check wildcard *.apps.sandbox.okd.local on container_registry virtual machine resolve to load balander
+      when: vm_name in vms.list_vms
+    - name: Check wildcard *.apps.sandbox.okd.local on {{ vm_name }} virtual machine resolve to load balander
       block:
         - name: Execute Host resolution
           shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.sandbox.okd.local +short'
@@ -198,7 +199,7 @@
               - "ips_resolved is defined"
               - "ips_resolved.stdout_lines is defined"
               - "ips_resolved.stdout_lines|length > 0"
-    - name: Wait container_registry container registry service is active
+    - name: Wait {{ vm_name }} container registry service is active
       shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-active podman-registry.service'
       register: task_result
       until: task_result.stdout == 'active'

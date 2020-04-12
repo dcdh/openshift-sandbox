@@ -1,7 +1,7 @@
 ---
 - name: Create lb virtual machine
   vars:
-    vm_name: lb
+    vm_name: "lb.sandbox.okd.local"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     vm_path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
     boot_init_iso_path: "{{ vm_path }}/boot-init.iso"
@@ -14,11 +14,11 @@
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: "lb.sandbox.okd.local"
   block:
-    - name: Get virtual machines defined
+    - name: List virtual machines
       virt:
-        command: info
+        command: list_vms
         uri: "qemu:///session"
-      register: info
+      register: vms
     - name: Create {{ vm_name }} virtual machine
       block:
         - name: Create {{ vm_name }} virtual machine directories
@@ -306,4 +306,4 @@
                   - "ips_resolved is defined"
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
-      when: info.lb is not defined
+      when: vm_name in vms.list_vms

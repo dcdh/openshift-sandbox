@@ -8,7 +8,7 @@
       include: add_fix_bridge_permissions_for_user.yml
     - name: Create dns virtual machine
       include: create_dns_vm.yml
-    - name: Create container_registry okd virtual machine
+    - name: Create container registry okd virtual machine
       include: create_container_registry_vm.yml
     - name: Add virbr1 vlan for sandbox okd cluster virtual machines
       include: add_virbr1_vlan_network.yml

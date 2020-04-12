@@ -1,7 +1,7 @@
 ---
 - name: Delete control plane {{ item.index }} virtual machine
   vars:
-    vm_name: "control_plane_{{ item.index }}"
+    vm_name: "control_plane_{{ item.index }}.sandbox.okd.local"
     ip: "{{ item.ip }}"
   block:
     - name: Delete {{ vm_name }} virtual machine data

@@ -1,7 +1,7 @@
 ---
 - name: Create dns virtual machine
   vars:
-    vm_name: dns
+    vm_name: "dns.okd.local"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     vm_path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
     boot_init_iso_path: "{{ vm_path }}/boot-init.iso"
@@ -15,11 +15,11 @@
     load_balancer_ip: "10.0.5.57"
     dns_name: "dns.okd.local"
   block:
-    - name: Get virtual machines defined
+    - name: List virtual machines
       virt:
-        command: info
+        command: list_vms
         uri: "qemu:///session"
-      register: info
+      register: vms
     - name: Create {{ vm_name }} virtual machine
       block:
         - name: Create {{ vm_name }} virtual machine directories
@@ -255,6 +255,7 @@
               shell: systemctl reload NetworkManager
           become: true
           become_user: root
+# TODO : renaming et extraction comme pour create_control_plane_okd_vm
         - name: Check internal dns Host resolution is working
           block:
             - name: Execute Host resolution
@@ -290,4 +291,4 @@
               assert:
                 that:
                   - "'10.0.5.57' == ip_resolved.stdout"
-      when: info.dns is not defined
+      when: vm_name in vms.list_vms

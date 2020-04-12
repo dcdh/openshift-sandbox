@@ -1,7 +1,7 @@
 ---
 - name: Delete bootstrap okd virtual machine
   vars:
-    vm_name: "bootstrap"
+    vm_name: "bootstrap.sandbox.okd.local"
     ip: "10.0.5.58"
   block:
     - name: Delete {{ vm_name }} virtual machine data

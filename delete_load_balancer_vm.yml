@@ -1,32 +1,32 @@
 ---
 - name: Delete load balancer virtual machine
   vars:
-    vm_name: "lb"
+    vm_name: "lb.sandbox.okd.local"
     ip: "10.0.5.57"
   block:
     - name: Delete {{ vm_name }} virtual machine data
       file:
         path: "/home/{{ ansible_user_id }}/.okd/vms/{{ vm_name }}"
         state: absent
-    - name: Get virtual machines info
+    - name: List virtual machines
       virt:
-        command: info
+        command: list_vms
         uri: "qemu:///session"
-      register: info
+      register: vms
     - debug:
-        msg: "{{ info }}"
+        msg: "{{ vms }}"
     - name: Destroy {{ vm_name }} virtual machine
       virt:
         command: destroy
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.lb is defined
+      when: vm_name in vms.list_vms
     - name: Undefine {{ vm_name }} virtual machine
       virt:
         command: undefine
         name: "{{ vm_name }}"
         uri: "qemu:///session"
-      when: info.lb is defined
+      when: vm_name in vms.list_vms
     - name: Remove {{ vm_name }} virtual machine host from known_hosts
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"

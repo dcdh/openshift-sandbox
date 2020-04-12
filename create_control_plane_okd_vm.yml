@@ -1,7 +1,7 @@
 ---
 - name: Create control plane {{ item.index }} virtual machine
   vars:
-    vm_name: "control_plane_{{ item.index }}"
+    vm_name: "control_plane_{{ item.index }}.sandbox.okd.local"
     ip: "{{ item.ip }}"
     mac: "{{ item.mac }}"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
@@ -9,6 +9,11 @@
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
     dns_name: "control-plane-{{ item.index }}.sandbox.okd.local"
   block:
+    - name: List virtual machines
+      virt:
+        command: list_vms
+        uri: "qemu:///session"
+      register: vms
     - name: Create {{ vm_name }} virtual machine
       block:
         - name: Create {{ vm_name }} virtual machine directory
@@ -79,6 +84,7 @@
           until: task_result.rc == 0
           retries: 120
           delay: 5
+      when: vm_name in vms.list_vms
 # TODO nope je dois tester que le container-registry est accessible !!!
     - name: Should {{ vm_name }} virtual machine is well configured
       block:
