@@ -244,26 +244,30 @@
             state: drained
             delay: 10
         - name: Add {{ vm_name }} host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
-          shell: |
-            while [ -z "$knownHost" ]
-            do
-              sleep 1
-              knownHost=$(ssh-keyscan -t ssh-rsa {{ ip }})
-            done
-            echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
-          args:
-            executable: /bin/bash
+          block:
+            - name: Retrieve dns virtual machine public key
+              shell: ssh-keyscan -t ssh-rsa {{ ip }}
+              register: task_result
+              until: task_result.rc == 0
+              retries: 120
+              delay: 5
+            - debug:
+                msg: "{{ task_result }}"
+            - name: Write dns virtual machine public key into Host known hosts
+              lineinfile:
+                path: /home/{{ ansible_user_id }}/.ssh/known_hosts
+                insertafter: EOF
+                line: "{{ task_result.stdout }}"
+                backup: yes
         - name: Remove boot-init.iso from {{ vm_name }} vm
           shell:
             cmd: virsh change-media {{ vm_name }} --path {{ boot_init_iso_path }} --eject --config
         - name: Wait until {{ vm_name }} virtual machine is ready
-          shell: |
-            while ! ssh centos@{{ ip }} 'sudo grep -nri "The system is finally up" /var/log/cloud-init.log' > /dev/null
-            do
-              sleep 1
-            done
-          args:
-            executable: /bin/bash
+          shell: ssh centos@{{ ip }} 'sudo grep -nri "The system is finally up" /var/log/cloud-init.log' > /dev/null
+          register: task_result
+          until: task_result.rc == 0
+          retries: 120
+          delay: 5
         - name: Check {{ vm_name }} haproxy service is active
           block:
             - name: Get {{ vm_name }} haproxy service status

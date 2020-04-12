@@ -144,16 +144,24 @@
             port: 22
             state: drained
             delay: 10
-        - name: Add container_registry host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
-          shell: |
-            while [ -z "$knownHost" ]
-            do
-              sleep 1
-              knownHost=$(ssh-keyscan -t ssh-rsa {{ ip }})
-            done
-            echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
-          args:
-            executable: /bin/bash
+        - name: |
+            Add container_registry host to known_hosts - need to retry as ssh is not available yet after the port 22 is open
+            On fedora coreos an empty response can be returned :(
+          block:
+            - name: Retrieve dns virtual machine public key
+              shell: ssh-keyscan -t ssh-rsa {{ ip }}
+              register: task_result
+              until: task_result.rc == 0 and task_result.stdout != ''
+              retries: 120
+              delay: 5
+            - debug:
+                msg: "{{ task_result }}"
+            - name: Write dns virtual machine public key into Host known hosts
+              lineinfile:
+                path: /home/{{ ansible_user_id }}/.ssh/known_hosts
+                insertafter: EOF
+                line: "{{ task_result.stdout }}"
+                backup: yes
       when: info.container_registry is not defined
     - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on container_registry virtual machine resolve to load balander
       block:
@@ -191,14 +199,11 @@
               - "ips_resolved.stdout_lines is defined"
               - "ips_resolved.stdout_lines|length > 0"
     - name: Wait container_registry container registry service is active
-      shell: |
-        while [ "$isActive" != "active" ]
-        do
-          sleep 1
-          isActive=$(ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-active podman-registry.service')
-        done
-      args:
-        executable: /bin/bash
+      shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-active podman-registry.service'
+      register: task_result
+      until: task_result.stdout == 'active'
+      retries: 120
+      delay: 5
     - name: Wait for port 443
       wait_for:
         host: container-registry.ocp4-cluster-001.sandbox.okd

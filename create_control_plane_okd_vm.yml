@@ -54,24 +54,30 @@
             delay: 10
         - name: |
             Add {{ vm_name }} virtual machine to host known_hosts - need to retry as ssh is not available yet after the port 22 is open.
-          shell: |
-            while [ -z "$knownHost" ]
-            do
-              sleep 1
-              knownHost=$(ssh-keyscan -t ssh-rsa {{ ip }})
-            done
-            echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
-          args:
-            executable: /bin/bash
+            On fedora coreos an empty response can be returned :(
+          block:
+            - name: Retrieve dns virtual machine public key
+              shell: ssh-keyscan -t ssh-rsa {{ ip }}
+              register: task_result
+              until: task_result.rc == 0 and task_result.stdout != ''
+              retries: 120
+              delay: 5
+            - debug:
+                msg: "{{ task_result }}"
+            - name: Write dns virtual machine public key into Host known hosts
+              lineinfile:
+                path: /home/{{ ansible_user_id }}/.ssh/known_hosts
+                insertafter: EOF
+                line: "{{ task_result.stdout }}"
+                backup: yes
         - name: |
             Wait until unprivilegied {{ ansible_user_id }} can loggin in using ssh to avoid this message:
 #            fatal: [localhost]: FAILED! => {"changed": true, "cmd": "ssh core@10.0.5.59 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'", "delta": "0:00:00.102321", "end": "2020-04-11 19:56:50.886226", "msg": "non-zero return code", "rc": 255, "start": "2020-04-11 19:56:50.783905", "stderr": "\"System is booting up. Unprivileged users are not permitted to log in yet. Please come back later. For technical details, see pam_nologin(8).\"\nAuthentication failed.", "stderr_lines": ["\"System is booting up. Unprivileged users are not permitted to log in yet. Please come back later. For technical details, see pam_nologin(8).\"", "Authentication failed."], "stdout": "", "stdout_lines": []}
-          shell: |
-            ssh {{ ansible_user_id }}@{{ ip }} 'date'
-            while [ $? -ne 0 ]; do
-              sleep 1
-              ssh {{ ansible_user_id }}@{{ ip }} 'date'
-            done
+          shell: ssh {{ ansible_user_id }}@{{ ip }} 'date'
+          register: task_result
+          until: task_result.rc == 0
+          retries: 120
+          delay: 5
 # TODO nope je dois tester que le container-registry est accessible !!!
     - name: Should {{ vm_name }} virtual machine is well configured
       block:
@@ -100,13 +106,17 @@
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
     - name: Restart machine-config-daemon-firstboot.service if it has failed to start on {{ vm_name }} virtual machine
-# fatal: [localhost]: FAILED! => {"changed": true, "cmd": "ssh damien@10.0.5.59 'sudo systemctl restart machine-config-daemon-firstboot.service'", "delta": "0:01:18.110876", "end": "2020-04-11 21:22:46.652586", "msg": "non-zero return code", "rc": 1, "start": "2020-04-11 21:21:28.541710", "stderr": "Job for machine-config-daemon-firstboot.service canceled.", "stderr_lines": ["Job for machine-config-daemon-firstboot.service canceled."], "stdout": "", "stdout_lines": []}
-      shell: |
-        isFailed=$(ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-failed machine-config-daemon-firstboot.service')
-        if [[ "$isFailed" == "failed" ]]; then
-          ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
-          while [ $? -ne 0 ]; do
-            sleep 1
-            ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
-          done
-        fi
+      block:
+        - name: Retrieve machine-config-daemon-firstboot.service status
+          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-failed machine-config-daemon-firstboot.service'
+          register: task_result
+          until: task_retrieve_status_result.rc == 0
+          retries: 120
+          delay: 5
+        - name: Restart machine-config-daemon-firstboot.service
+          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
+          register: task_restart_result
+          until: task_restart_result.rc == 0
+          retries: 120
+          delay: 5
+          when: task_retrieve_status_result.stdout == 'failed'
