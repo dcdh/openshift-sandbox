@@ -2,8 +2,8 @@
 - name: This playbook deploy OKD 4 on a local server
   hosts: localhost
   tasks:
-    - name: Add internal network
-      include: add_internal_network.yml
+    - name: Add okd clusters network
+      include: add_okd_clusters_network.yml
     - name: Add fix bridge permissions for user
       include: add_fix_bridge_permissions_for_user.yml
     - name: Create dns virtual machine
@@ -11,7 +11,7 @@
     - name: Create container_registry okd virtual machine
       include: create_container_registry_vm.yml
     - name: Add okd cluster netword
-      include: add_okd_cluster_network.yml
+      include: add_okd_cluster_001_network.yml
     - name: Create lb virtual machine
       include: create_load_balancer_vm.yml
     - name: Install prerequisite okd infrastructure

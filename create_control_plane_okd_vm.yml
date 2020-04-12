@@ -38,7 +38,7 @@
             vcpus: 1
             disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "{{ mac }}"
-            vm_bridge: "virbr-okd-cl0"
+            vm_bridge: "virbr-okd-cl001"
             fw_cfg: "name=opt/com.coreos/config,file=/tmp/master.ign"
         - name: Start {{ vm_name }} virtual machine
           virt:

@@ -1,7 +1,7 @@
 ---
-- name: Add okd cluster netword
+- name: Add okd cluster 001 netword
   vars:
-    bridge_name: virbr-okd-cl0
+    bridge_name: "virbr-okd-cl001"
     bridge_mac: "52:54:00:00:05:01"
     bridge_ip: "10.0.5.1"
     dhcp_range_start: "10.0.5.10"

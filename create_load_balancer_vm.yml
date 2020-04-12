@@ -10,7 +10,7 @@
     mac: "52:54:00:00:05:57"
     ip: "10.0.5.57"
     dns_ip: "10.0.6.10"
-    bridge: virbr-okd-cl0
+    bridge: "virbr-okd-cl001"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: "lb.ocp4-cluster-001.sandbox.okd"
   block:

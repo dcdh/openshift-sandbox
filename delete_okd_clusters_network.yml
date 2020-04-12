@@ -1,7 +1,7 @@
 ---
-- name: Delete internal network
+- name: Delete okd clusters network
   vars:
-    bridge_name: "virbr-okd-int"
+    bridge_name: "virbr-okd-cls"
   block:
     - name: Delete {{ bridge_name }} interface
       file:
