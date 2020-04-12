@@ -283,7 +283,7 @@
         - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
           block:
             - name: Execute dns virtual machine resolution in {{ vm_name }} VM
-              shell: ssh centos@{{ ip }} 'dig dns.ocp4-cluster-001.sandbox.okd +short'
+              shell: ssh centos@{{ ip }} 'dig dns.ocp4-clusters.sandbox.okd +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"

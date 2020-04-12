@@ -59,7 +59,7 @@ The main objective is to run a local instance as a testing purpose.
 
 | Machine            | CPU | RAM  | Storage | OS            | static IP  | mac               | DNS                                             |
 | ------------------ | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :-----------------------------------------------|
-| DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.ocp4-cluster-001.sandbox.okd                |
+| DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.ocp4-clusters.sandbox.okd                   |
 | Container Registry |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.6.11 | 52:54:00:00:06:11 | container-registry.ocp4-cluster-001.sandbox.okd |
 | Load Balancer      |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.ocp4-cluster-001.sandbox.okd                 |
 | Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.ocp4-cluster-001.sandbox.okd    |
@@ -91,7 +91,7 @@ The main objective is to run a local instance as a testing purpose.
   <ip address='10.0.6.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='10.0.6.10' end='10.0.6.254'/>
-      <host mac='52:54:00:00:06:10' name='dns.ocp4-cluster-001.sandbox.okd' ip='10.0.6.10'/>
+      <host mac='52:54:00:00:06:10' name='dns.ocp4-clusters.sandbox.okd' ip='10.0.6.10'/>
     </dhcp>
   </ip>
 </network>
@@ -190,10 +190,10 @@ Objective: install dns virtual machine:
 - OS: CentOS 7
 - static IP: 10.0.6.10
 - mac: 52:54:00:00:06:10
-- dns: dns.ocp4-cluster-001.sandbox.okd
+- dns: dns.ocp4-clusters.sandbox.okd
 
 ```
-# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-dns -D ocp4-cluster-001.sandbox.okd -M 52:54:00:00:06:10 dns.ocp4-cluster-001.sandbox.okd
+# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-dns -D ocp4-cluster-001.sandbox.okd -M 52:54:00:00:06:10 dns.ocp4-clusters.sandbox.okd
 ```
 
 ```
@@ -221,7 +221,7 @@ EOF
       
 ```
 # cat << 'EOF' | sudo tee /etc/dnsmasq.openshift.addnhosts
-10.0.6.10 dns.ocp4-cluster-001.sandbox.okd
+10.0.6.10 dns.ocp4-clusters.sandbox.okd
 10.0.5.57 lb.ocp4-cluster-001.sandbox.okd  api.ocp4-cluster-001.sandbox.okd  api-int.ocp4-cluster-001.sandbox.okd
 10.0.5.58 bootstrap.ocp4-cluster-001.sandbox.okd
 10.0.5.59 control-plane-0.ocp4-cluster-001.sandbox.okd  etcd-0.ocp4-cluster-001.sandbox.okd
@@ -545,7 +545,7 @@ so `UU6iS/x4vtKZnQfzhP3O64XNVVKtWTxGASGlmmC+FAQ VM Login ssh key`
 # Hostname management
 preserve_hostname: False
 hostname: dns
-fqdn: dns.ocp4-cluster-001.sandbox.okd
+fqdn: dns.ocp4-clusters.sandbox.okd
 
 # Users
 users:

@@ -13,7 +13,7 @@
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     load_balancer_ip: "10.0.5.57"
-    dns_name: "dns.ocp4-cluster-001.sandbox.okd"
+    dns_name: "dns.ocp4-clusters.sandbox.okd"
   block:
     - name: Get virtual machines defined
       virt:
@@ -120,7 +120,7 @@
                   path: /run/myconf/dnsmasq.conf
                 - content: |
                     10.0.6.11 container-registry.ocp4-cluster-001.sandbox.okd
-                    10.0.6.10 dns.ocp4-cluster-001.sandbox.okd
+                    10.0.6.10 dns.ocp4-clusters.sandbox.okd
                     10.0.5.57 lb.ocp4-cluster-001.sandbox.okd  api.ocp4-cluster-001.sandbox.okd  api-int.ocp4-cluster-001.sandbox.okd
                     10.0.5.58 bootstrap.ocp4-cluster-001.sandbox.okd
                     10.0.5.59 control-plane-0.ocp4-cluster-001.sandbox.okd  etcd-0.ocp4-cluster-001.sandbox.okd
