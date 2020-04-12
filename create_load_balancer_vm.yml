@@ -12,6 +12,7 @@
     dns_ip: "10.0.6.10"
     bridge: virbr-okd-cl0
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+    dns_name: "lb.ocp4-cluster-001.sandbox.okd"
   block:
     - name: Get virtual machines defined
       virt:
@@ -257,7 +258,7 @@
               lineinfile:
                 path: /home/{{ ansible_user_id }}/.ssh/known_hosts
                 insertafter: EOF
-                line: "{{ task_result.stdout }}"
+                line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
         - name: Remove boot-init.iso from {{ vm_name }} vm
           shell:

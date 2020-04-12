@@ -31,4 +31,4 @@
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
-        regexp: '^{{ ip }}.*$'
+        regexp: '^.*{{ ip }}.*$'

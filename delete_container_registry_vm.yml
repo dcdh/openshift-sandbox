@@ -31,7 +31,7 @@
       lineinfile:
         path: "/home/{{ ansible_user_id }}/.ssh/known_hosts"
         state: absent
-        regexp: '^{{ ip }}.*$'
+        regexp: '^.*{{ ip }}.*$'
     - name: Remove ignition file
       file:
         path: /tmp/container_registry.ign

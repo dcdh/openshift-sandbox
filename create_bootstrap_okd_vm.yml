@@ -7,6 +7,7 @@
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+    dns_name: "bootstrap.ocp4-cluster-001.sandbox.okd"
   block:
     - name: Create {{ vm_name }} virtual machine
       block:
@@ -67,7 +68,7 @@
               lineinfile:
                 path: /home/{{ ansible_user_id }}/.ssh/known_hosts
                 insertafter: EOF
-                line: "{{ task_result.stdout }}"
+                line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
 # TODO nope je dois tester que le container-registry est accessible !!!
     - name: Should {{ vm_name }} virtual machine is well configured

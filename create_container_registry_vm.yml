@@ -7,7 +7,7 @@
     vms_path: "{{ installer_path }}/vms"
     ip: "10.0.6.11"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-    dns_name: container-registry.ocp4-cluster-001.sandbox.okd
+    dns_name: "container-registry.ocp4-cluster-001.sandbox.okd"
     domain_crt: "{{ installer_path }}/domain.crt"
     domain_key: "{{ installer_path }}/domain.key"
   block:
@@ -160,7 +160,7 @@
               lineinfile:
                 path: /home/{{ ansible_user_id }}/.ssh/known_hosts
                 insertafter: EOF
-                line: "{{ task_result.stdout }}"
+                line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
       when: info.container_registry is not defined
     - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on container_registry virtual machine resolve to load balander
