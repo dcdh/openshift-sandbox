@@ -5,7 +5,7 @@
     ip: "{{ item.ip }}"
     mac: "{{ item.mac }}"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
-    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
+    fedora_coreos_cloud_image_name: "fedora-coreos-31.20200406.20.0-qemu.x86_64.qcow2"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
     dns_ip: "10.0.6.10"
     dns_name: "control-plane-{{ item.index }}.sandbox.okd.local"

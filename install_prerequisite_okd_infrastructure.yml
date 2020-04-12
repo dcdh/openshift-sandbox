@@ -1,13 +1,13 @@
 ---
 - name: Install prerequisite okd infrastructure
   vars:
-    fedora_coreos_version: "31.20200310.3.0"
-    okd_version: "4.4.0-0.okd-2020-01-28-022517"
+    fedora_coreos_version: "31.20200406.20.0"
+    okd_version: "4.4.0-0.okd-2020-04-07-175212-beta2"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     installer_path: "/home/{{ ansible_user_id }}/.okd"
     fedora_coreos_cloud_image_name: "fedora-coreos-{{ fedora_coreos_version }}-qemu.x86_64.qcow2"
     fedora_coreos_cloud_image_name_archive: "fedora-coreos-{{ fedora_coreos_version }}-qemu.x86_64.qcow2.xz"
-    fedora_coreos_cloud_image_name_archive_sha256: "f312eae7c5e16ac4c03ebb167129c258b85ddeac355e1fccbe70833156a23e32"
+    fedora_coreos_cloud_image_name_archive_sha256: "4594182133375ce0cca180ef42506492da79adff79db655a4cc5fc94fb708f92"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     domain_crt: "{{ installer_path }}/domain.crt"
