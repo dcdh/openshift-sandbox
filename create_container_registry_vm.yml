@@ -7,7 +7,7 @@
     vms_path: "{{ installer_path }}/vms"
     ip: "10.0.6.11"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-    dns_name: "container-registry.ocp4-cluster-001.sandbox.okd"
+    dns_name: "container-registry.ocp4-clusters.sandbox.okd"
     domain_crt: "{{ installer_path }}/domain.crt"
     domain_key: "{{ installer_path }}/domain.key"
   block:
@@ -174,10 +174,10 @@
           assert:
             that:
               - "'10.0.5.57' == ip_resolved.stdout"
-    - name: Check container-registry.ocp4-cluster-001.sandbox.okd on HOST resolve to container-registry
+    - name: Check container-registry.ocp4-clusters.sandbox.okd on HOST resolve to container-registry
       block:
         - name: Execute Host resolution
-          shell: dig container-registry.ocp4-cluster-001.sandbox.okd +short
+          shell: dig container-registry.ocp4-clusters.sandbox.okd +short
           register: ip_resolved
         - debug:
             msg: "{{ ip_resolved }}"
@@ -206,12 +206,12 @@
       delay: 5
     - name: Wait for port 443
       wait_for:
-        host: container-registry.ocp4-cluster-001.sandbox.okd
+        host: container-registry.ocp4-clusters.sandbox.okd
         port: 443
         state: drained
         delay: 2
     - name: Pull images to container registry. It can be long as at least 7Gb of data should be downloaded
-      shell: ssh {{ ansible_user_id }}@{{ ip }} 'skopeo copy docker://{{ item.imageId }} docker://container-registry.ocp4-cluster-001.sandbox.okd/{{ item.registryMirrorImage }} --dest-tls-verify=false'
+      shell: ssh {{ ansible_user_id }}@{{ ip }} 'skopeo copy docker://{{ item.imageId }} docker://container-registry.ocp4-clusters.sandbox.okd/{{ item.registryMirrorImage }} --dest-tls-verify=false'
       register: task_result
       until: task_result.rc == 0
       retries: 10
@@ -329,7 +329,7 @@
       block:
         - name: Get list of repositories
 # TODO faire le test depuis bootstrap
-          shell: curl -k https://container-registry.ocp4-cluster-001.sandbox.okd:443/v2/_catalog
+          shell: curl -k https://container-registry.ocp4-clusters.sandbox.okd:443/v2/_catalog
           register: repositories
         - debug:
             msg: "{{ repositories }}"

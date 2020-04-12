@@ -400,7 +400,7 @@ systemctl status podman-registry.service
 systemctl is-active --quiet podman-registry.service
 
 
-container-registry.ocp4-cluster-001.sandbox.okd
+container-registry.ocp4-clusters.sandbox.okd
 
 install telnet
 rpm-ostree install telnet
@@ -434,7 +434,7 @@ netstat -tulpn | grep LISTEN
 
 https://docs.openshift.com/container-platform/4.2/openshift_images/image-configuration.html
 
-curl http://container-registry.ocp4-cluster-001.sandbox.okd:80/v2/openshift/okd-content/manifests/latest
+curl http://container-registry.ocp4-clusters.sandbox.okd:80/v2/openshift/okd-content/manifests/latest
 
 - worker + control plane
 
@@ -447,7 +447,7 @@ location = "quay.io/openshift"
 mirror-by-digest-only = true
 
   [[registry.mirror]]
-  location = "container-registry.ocp4-cluster-001.sandbox.okd/openshift"
+  location = "container-registry.ocp4-clusters.sandbox.okd/openshift"
   insecure = true
 ```
 
@@ -472,7 +472,7 @@ TODO: regenerer les certificats : les redeposser dans le registry, regenerer les
 
 
 ssh damien@10.0.5.58
-curl -k https://container-registry.ocp4-cluster-001.sandbox.okd:443/v2/_catalog
+curl -k https://container-registry.ocp4-clusters.sandbox.okd:443/v2/_catalog
 podman --log-level=debug pull quay.io/openshift/okd-content@sha256:b9d78a6300ae7d414aa2e4cb3353416d1c12c28ca2fb4b8874ad23c2937e4ccc
 > alors l'image est bien téléchargé via dns
 > putain cela speed à pleine balle !!!! youou
@@ -492,7 +492,7 @@ curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master > re
 
 journalctl -u machine-config-daemon-firstboot.service
 
-dig container-registry.ocp4-cluster-001.sandbox.okd
+dig container-registry.ocp4-clusters.sandbox.okd
 
 podman --log-level=debug pull quay.io/openshift/okd-content@sha256:9e90d4ae5ce69de2cbde214871ae7c64ed49ae20ceca66ede0802cf7a792af8b
 

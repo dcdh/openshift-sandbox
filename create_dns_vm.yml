@@ -119,7 +119,7 @@
                     log-facility=/var/log/dnsmasq.log
                   path: /run/myconf/dnsmasq.conf
                 - content: |
-                    10.0.6.11 container-registry.ocp4-cluster-001.sandbox.okd
+                    10.0.6.11 container-registry.ocp4-clusters.sandbox.okd
                     10.0.6.10 dns.ocp4-clusters.sandbox.okd
                     10.0.5.57 lb.ocp4-cluster-001.sandbox.okd  api.ocp4-cluster-001.sandbox.okd  api-int.ocp4-cluster-001.sandbox.okd
                     10.0.5.58 bootstrap.ocp4-cluster-001.sandbox.okd
