@@ -13,7 +13,7 @@
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     load_balancer_ip: "10.0.5.57"
-    dns_name: "dns.ocp4-clusters.sandbox.okd"
+    dns_name: "dns.okd.local"
   block:
     - name: Get virtual machines defined
       virt:
@@ -73,7 +73,7 @@
               # Hostname management
               preserve_hostname: False
               hostname: {{ vm_name }}
-              fqdn: {{ vm_name }}.ocp4-cluster-001.sandbox.okd
+              fqdn: {{ vm_name }}.sandbox.okd.local
               manage_etc_hosts: true
 
               # Users
@@ -106,9 +106,9 @@
 
               write_files:
                 - content: |
-                    local=/ocp4-cluster-001.sandbox.okd/
-                    address=/apps.ocp4-cluster-001.sandbox.okd/10.0.5.57
-                    srv-host=_etcd-server-ssl._tcp.ocp4-cluster-001.sandbox.okd,control-plane-0.ocp4-cluster-001.sandbox.okd,2380,0,10
+                    local=/sandbox.okd.local/
+                    address=/apps.sandbox.okd.local/10.0.5.57
+                    srv-host=_etcd-server-ssl._tcp.sandbox.okd.local,control-plane-0.sandbox.okd.local,2380,0,10
                     no-hosts
                     addn-hosts=/etc/dnsmasq.okd.addnhosts
                     conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
@@ -119,14 +119,14 @@
                     log-facility=/var/log/dnsmasq.log
                   path: /run/myconf/dnsmasq.conf
                 - content: |
-                    10.0.6.11 container-registry.ocp4-clusters.sandbox.okd
-                    10.0.6.10 dns.ocp4-clusters.sandbox.okd
-                    10.0.5.57 lb.ocp4-cluster-001.sandbox.okd  api.ocp4-cluster-001.sandbox.okd  api-int.ocp4-cluster-001.sandbox.okd
-                    10.0.5.58 bootstrap.ocp4-cluster-001.sandbox.okd
-                    10.0.5.59 control-plane-0.ocp4-cluster-001.sandbox.okd  etcd-0.ocp4-cluster-001.sandbox.okd
-                    10.0.5.60 control-plane-1.ocp4-cluster-001.sandbox.okd  etcd-1.ocp4-cluster-001.sandbox.okd
-                    10.0.5.61 control-plane-2.ocp4-cluster-001.sandbox.okd  etcd-2.ocp4-cluster-001.sandbox.okd
-                    10.0.5.62 compute-0.ocp4-cluster-001.sandbox.okd
+                    10.0.6.11 container-registry.sandbox.okd.local
+                    10.0.6.10 dns.okd.local
+                    10.0.5.57 lb.sandbox.okd.local  api.sandbox.okd.local  api-int.sandbox.okd.local
+                    10.0.5.58 bootstrap.sandbox.okd.local
+                    10.0.5.59 control-plane-0.sandbox.okd.local  etcd-0.sandbox.okd.local
+                    10.0.5.60 control-plane-1.sandbox.okd.local  etcd-1.sandbox.okd.local
+                    10.0.5.61 control-plane-2.sandbox.okd.local  etcd-2.sandbox.okd.local
+                    10.0.5.62 compute-0.sandbox.okd.local
                   path: /run/myconf/dnsmasq.okd.addnhosts
                 - content: |
                     # The objectif is to overide the definition of nameserver in /etc/resolv.conf
@@ -220,7 +220,7 @@
         - name: Check local resolution in {{ vm_name }} VM
           block:
             - name: Execute local resolution in {{ vm_name }} VM
-              shell: ssh centos@{{ ip }} 'dig apps.ocp4-cluster-001.sandbox.okd +short'
+              shell: ssh centos@{{ ip }} 'dig apps.sandbox.okd.local +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
@@ -258,7 +258,7 @@
         - name: Check internal dns Host resolution is working
           block:
             - name: Execute Host resolution
-              shell: dig apps.ocp4-cluster-001.sandbox.okd +short
+              shell: dig apps.sandbox.okd.local +short
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
@@ -279,10 +279,10 @@
                   - "ips_resolved is defined"
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
-        - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on Host resolve to load balander
+        - name: Check wildcard *.apps.sandbox.okd.local on Host resolve to load balander
           block:
             - name: Execute Host resolution
-              shell: dig test.apps.ocp4-cluster-001.sandbox.okd +short
+              shell: dig test.apps.sandbox.okd.local +short
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"

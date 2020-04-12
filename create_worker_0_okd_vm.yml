@@ -56,10 +56,10 @@
 #        echo "$knownHost" >> "/home/{{ ansible_user_id }}/.ssh/known_hosts"
 #      args:
 #        executable: /bin/bash
-#    - name: Check wildcard *.apps.ocp4-cluster-001.sandbox.okd on worker_0 virtual machine resolve to load balander
+#    - name: Check wildcard *.apps.sandbox.okd.local on worker_0 virtual machine resolve to load balander
 #      block:
 #        - name: Execute Host resolution
-#          shell: ssh core@{{ ip }} 'dig test.apps.ocp4-cluster-001.sandbox.okd +short'
+#          shell: ssh core@{{ ip }} 'dig test.apps.sandbox.okd.local +short'
 #          register: ip_resolved
 #        - debug:
 #            msg: "{{ ip_resolved }}"

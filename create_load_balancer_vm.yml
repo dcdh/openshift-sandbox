@@ -12,7 +12,7 @@
     dns_ip: "10.0.6.10"
     bridge: "virbr-okd-cl001"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
-    dns_name: "lb.ocp4-cluster-001.sandbox.okd"
+    dns_name: "lb.sandbox.okd.local"
   block:
     - name: Get virtual machines defined
       virt:
@@ -72,7 +72,7 @@
               # Hostname management
               preserve_hostname: False
               hostname: {{ vm_name }}
-              fqdn: {{ vm_name }}.ocp4-cluster-001.sandbox.okd
+              fqdn: {{ vm_name }}.sandbox.okd.local
               manage_etc_hosts: true
 
               # Users
@@ -156,10 +156,10 @@
                     backend ocp4_k8s_api_be
                         balance roundrobin
                         mode tcp
-                        server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:6443 check
-                        server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:6443 check
-                        server      control-plane-1 control-plane-1.ocp4-cluster-001.sandbox.okd:6443 check
-                        server      control-plane-2 control-plane-2.ocp4-cluster-001.sandbox.okd:6443 check
+                        server      bootstrap bootstrap.sandbox.okd.local:6443 check
+                        server      control-plane-0 control-plane-0.sandbox.okd.local:6443 check
+                        server      control-plane-1 control-plane-1.sandbox.okd.local:6443 check
+                        server      control-plane-2 control-plane-2.sandbox.okd.local:6443 check
 
                     frontend ocp4_machine_config_server_fe
                         bind :22623
@@ -170,10 +170,10 @@
                     backend ocp4_machine_config_server_be
                         balance roundrobin
                         mode tcp
-                        server      bootstrap bootstrap.ocp4-cluster-001.sandbox.okd:22623 check
-                        server      control-plane-0 control-plane-0.ocp4-cluster-001.sandbox.okd:22623 check
-                        server      control-plane-1 control-plane-1.ocp4-cluster-001.sandbox.okd:22623 check
-                        server      control-plane-2 control-plane-2.ocp4-cluster-001.sandbox.okd:22623 check
+                        server      bootstrap bootstrap.sandbox.okd.local:22623 check
+                        server      control-plane-0 control-plane-0.sandbox.okd.local:22623 check
+                        server      control-plane-1 control-plane-1.sandbox.okd.local:22623 check
+                        server      control-plane-2 control-plane-2.sandbox.okd.local:22623 check
 
                     frontend ocp4_http_ingress_traffic_fe
                         bind :80
@@ -184,7 +184,7 @@
                     backend ocp4_http_ingress_traffic_be
                         balance roundrobin
                         mode tcp
-                        server      compute-0 compute-0.ocp4-cluster-001.sandbox.okd:80 check
+                        server      compute-0 compute-0.sandbox.okd.local:80 check
 
                     frontend ocp4_https_ingress_traffic_fe
                         bind :443
@@ -195,7 +195,7 @@
                     backend ocp4_https_ingress_traffic_be
                         balance roundrobin
                         mode tcp
-                        server      compute-0 compute-0.ocp4-cluster-001.sandbox.okd:443 check
+                        server      compute-0 compute-0.sandbox.okd.local:443 check
                   path: /run/myconf/haproxy.cfg
                 - content: |
                     supersede domain-name-servers {{ dns_ip }};
@@ -285,7 +285,7 @@
         - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
           block:
             - name: Execute dns virtual machine resolution in {{ vm_name }} VM
-              shell: ssh centos@{{ ip }} 'dig dns.ocp4-clusters.sandbox.okd +short'
+              shell: ssh centos@{{ ip }} 'dig dns.okd.local +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"

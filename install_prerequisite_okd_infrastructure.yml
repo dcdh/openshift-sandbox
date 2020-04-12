@@ -98,7 +98,7 @@
             {{ lookup('file', domain_crt) | indent(width=2, indentfirst=False) }}
           imageContentSources:
           - mirrors:
-            - container-registry.ocp4-clusters.sandbox.okd/openshift
+            - container-registry.sandbox.okd.local/openshift
             source: quay.io/openshift
       with_items:
         ["install-config.yaml","install-config.yaml.bak"]

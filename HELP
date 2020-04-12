@@ -14,7 +14,7 @@ Putain je suis con ! j'ai crée une boucle avec le bridge ip qui fait appelle à
 nmcli dev show eth0 | grep IP4
 
 
-https://api.ocp4-cluster-001.sandbox.okd:6443/
+https://api.sandbox.okd.local:6443/
 
 
 depuis le bootstrap ssh damien@10.0.5.58
@@ -26,7 +26,7 @@ c'est certainement liée au non respect ...
 
 worker KO !!!!!!!!!!!!!!!!!!!!!!!!!!
 
-/var/log/pods/default_bootstrap-machine-config-operator-bootstrap.ocp4-cluster-001.sandbox.okd_786b1ef2b1954aa7196c3660a8186ff8/machine-config-server
+/var/log/pods/default_bootstrap-machine-config-operator-bootstrap.sandbox.okd.local_786b1ef2b1954aa7196c3660a8186ff8/machine-config-server
 refusing to serve bootstrap configuration to pool "worker"
 2020-04-05T21:39:56.812099836+00:00 stderr F E0405 21:39:56.812063       1 api.go:103] couldn't get config for req: {worker}, error: refusing to serve bootstrap configuration to pool "worker"
 https://github.com/openshift/machine-config-operator/blob/master/pkg/server/api.go
@@ -51,7 +51,7 @@ when I try to install okd, my worker is failing as each time it try to retrieve 
 
 I got
 ```
-[7323.218867] ignition[551]: GET error: Get https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker: EOF
+[7323.218867] ignition[551]: GET error: Get https://api-int.sandbox.okd.local:22623/config/worker: EOF
 ```
 And following logs:
 ```
@@ -71,14 +71,14 @@ Damien
 
 
 
-curl -k -v https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker
+curl -k -v https://api-int.sandbox.okd.local:22623/config/worker
 
 
 
 ssh damien@10.0.5.62 connection refused ...
 
 master OK je dois determiner comment celui ci est up
-curl -k -v https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+curl -k -v https://api-int.sandbox.okd.local:22623/config/master
 
 ssh damien@10.0.5.59 connection refused ...
 
@@ -88,7 +88,7 @@ La connection est accessible une fois que le fichier à merger dans la conf est 
 dans mes conf j'ai une notion de merge ...
 "merge": [
         {
-          "source": "https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/worker"
+          "source": "https://api-int.sandbox.okd.local:22623/config/worker"
         }
       ]
 peut être qu'il est en attente et une fois recu il applique la conf ...
@@ -99,7 +99,7 @@ peut être qu'il est en attente et une fois recu il applique la conf ...
 
 putain une fois que bootstrap a redemarre mes
 
-https://api.ocp4-cluster-001.sandbox.okd:6443/version?timeout=32s:
+https://api.sandbox.okd.local:6443/version?timeout=32s:
 10.0.5.57 envoie vers le loadbalander
 6443
                     backend ocp4_k8s_api_be
@@ -155,7 +155,7 @@ Youpi !!!
 
 
                               strict-order
-                              domain=ocp4-cluster-001.sandbox.okd
+                              domain=sandbox.okd.local
                               expand-hosts
                               pid-file=/var/run/libvirt/network/okd-dns0.pid
                               except-interface=lo
@@ -211,7 +211,7 @@ openshift-install wait-for install-complete --log-level debug
 faire un script pour preparer le Host : soit ipv4 forward ...
 
 
-https://console-openshift-console.apps.ocp4-cluster-001.sandbox.okd
+https://console-openshift-console.apps.sandbox.okd.local
 
 
 
@@ -400,7 +400,7 @@ systemctl status podman-registry.service
 systemctl is-active --quiet podman-registry.service
 
 
-container-registry.ocp4-clusters.sandbox.okd
+container-registry.sandbox.okd.local
 
 install telnet
 rpm-ostree install telnet
@@ -434,7 +434,7 @@ netstat -tulpn | grep LISTEN
 
 https://docs.openshift.com/container-platform/4.2/openshift_images/image-configuration.html
 
-curl http://container-registry.ocp4-clusters.sandbox.okd:80/v2/openshift/okd-content/manifests/latest
+curl http://container-registry.sandbox.okd.local:80/v2/openshift/okd-content/manifests/latest
 
 - worker + control plane
 
@@ -447,7 +447,7 @@ location = "quay.io/openshift"
 mirror-by-digest-only = true
 
   [[registry.mirror]]
-  location = "container-registry.ocp4-clusters.sandbox.okd/openshift"
+  location = "container-registry.sandbox.okd.local/openshift"
   insecure = true
 ```
 
@@ -472,7 +472,7 @@ TODO: regenerer les certificats : les redeposser dans le registry, regenerer les
 
 
 ssh damien@10.0.5.58
-curl -k https://container-registry.ocp4-clusters.sandbox.okd:443/v2/_catalog
+curl -k https://container-registry.sandbox.okd.local:443/v2/_catalog
 podman --log-level=debug pull quay.io/openshift/okd-content@sha256:b9d78a6300ae7d414aa2e4cb3353416d1c12c28ca2fb4b8874ad23c2937e4ccc
 > alors l'image est bien téléchargé via dns
 > putain cela speed à pleine balle !!!! youou
@@ -483,16 +483,16 @@ puis cpu à fond pour recuperer les images depuis le registre
 14:30 reboot !
 
 curl -L -k https://localhost:22623/config/master
-curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master
+curl -L -k https://api-int.sandbox.okd.local:22623/config/master
 
-curl -L -k https://api-int.ocp4-cluster-001.sandbox.okd:22623/config/master > reponse_bootstrap_to_master.json
+curl -L -k https://api-int.sandbox.okd.local:22623/config/master > reponse_bootstrap_to_master.json
 
 
 
 
 journalctl -u machine-config-daemon-firstboot.service
 
-dig container-registry.ocp4-clusters.sandbox.okd
+dig container-registry.sandbox.okd.local
 
 podman --log-level=debug pull quay.io/openshift/okd-content@sha256:9e90d4ae5ce69de2cbde214871ae7c64ed49ae20ceca66ede0802cf7a792af8b
 

@@ -57,16 +57,16 @@ In the following part we will install an instance of OKD compound of :
 This installation is not high available as if the control plane, or the worker fails the cluster will fail too.
 The main objective is to run a local instance as a testing purpose.
 
-| Machine            | CPU | RAM  | Storage | OS            | static IP  | mac               | DNS                                             |
-| ------------------ | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :-----------------------------------------------|
-| DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.ocp4-clusters.sandbox.okd                   |
-| Container Registry |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.6.11 | 52:54:00:00:06:11 | container-registry.ocp4-clusters.sandbox.okd    |
-| Load Balancer      |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.ocp4-cluster-001.sandbox.okd                 |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.ocp4-cluster-001.sandbox.okd    |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.ocp4-cluster-001.sandbox.okd    |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.ocp4-cluster-001.sandbox.okd    |
-| Worker             |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.ocp4-cluster-001.sandbox.okd          |
-| Bootstrap          |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.58 | 52:54:00:00:05:58 | bootstrap.ocp4-cluster-001.sandbox.okd          |
+| Machine            | CPU | RAM  | Storage | OS            | static IP  | mac               | DNS                                  |
+| ------------------ | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :------------------------------------|
+| DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.okd.local                        |
+| Container Registry |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.6.11 | 52:54:00:00:06:11 | container-registry.sandbox.okd.local |
+| Load Balancer      |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.sandbox.okd.local                 |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.sandbox.okd.local    |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.sandbox.okd.local    |
+| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.sandbox.okd.local    |
+| Worker             |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.sandbox.okd.local          |
+| Bootstrap          |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.58 | 52:54:00:00:05:58 | bootstrap.sandbox.okd.local          |
 
 ## Networks
 
@@ -87,11 +87,11 @@ The main objective is to run a local instance as a testing purpose.
   </forward>
   <bridge name='virbr-os-dns' stp='on' delay='0'/>
   <mac address='52:54:00:00:06:00'/>
-  <domain name='ocp4-cluster-001.sandbox.okd' localOnly='no'/>
+  <domain name='sandbox.okd.local' localOnly='no'/>
   <ip address='10.0.6.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='10.0.6.10' end='10.0.6.254'/>
-      <host mac='52:54:00:00:06:10' name='dns.ocp4-clusters.sandbox.okd' ip='10.0.6.10'/>
+      <host mac='52:54:00:00:06:10' name='dns.okd.local' ip='10.0.6.10'/>
     </dhcp>
   </ip>
 </network>
@@ -117,17 +117,17 @@ EOF
   </forward>
   <bridge name='virbr-os-cl' stp='on' delay='0'/>
   <mac address='52:54:00:00:05:00'/>
-  <domain name='ocp4-cluster-001.sandbox.okd' localOnly='no'/>
+  <domain name='sandbox.okd.local' localOnly='no'/>
   <dns>
     <forwarder addr='10.0.6.10'/>
   </dns>
   <ip address='10.0.5.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='10.0.5.10' end='10.0.5.254'/>
-      <host mac='52:54:00:00:05:57' name='lb.ocp4-cluster-001.sandbox.okd' ip='10.0.5.57'/>
-      <host mac='52:54:00:00:05:59' name='control-plane-0.ocp4-cluster-001.sandbox.okd' ip='10.0.5.59'/>
-      <host mac='52:54:00:00:05:62' name='compute-0.ocp4-cluster-001.sandbox.okd' ip='10.0.5.62'/>
-      <host mac='52:54:00:00:05:58' name='bootstrap.ocp4-cluster-001.sandbox.okd' ip='10.0.5.58'/>
+      <host mac='52:54:00:00:05:57' name='lb.sandbox.okd.local' ip='10.0.5.57'/>
+      <host mac='52:54:00:00:05:59' name='control-plane-0.sandbox.okd.local' ip='10.0.5.59'/>
+      <host mac='52:54:00:00:05:62' name='compute-0.sandbox.okd.local' ip='10.0.5.62'/>
+      <host mac='52:54:00:00:05:58' name='bootstrap.sandbox.okd.local' ip='10.0.5.58'/>
     </dhcp>
   </ip>
 </network>
@@ -190,10 +190,10 @@ Objective: install dns virtual machine:
 - OS: CentOS 7
 - static IP: 10.0.6.10
 - mac: 52:54:00:00:06:10
-- dns: dns.ocp4-clusters.sandbox.okd
+- dns: dns.okd.local
 
 ```
-# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-dns -D ocp4-cluster-001.sandbox.okd -M 52:54:00:00:06:10 dns.ocp4-clusters.sandbox.okd
+# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-dns -D sandbox.okd.local -M 52:54:00:00:06:10 dns.okd.local
 ```
 
 ```
@@ -210,9 +210,9 @@ Objective: install dns virtual machine:
 
 ```
 # cat << 'EOF' | sudo tee /etc/dnsmasq.conf
-local=/ocp4-cluster-001.sandbox.okd/
-address=/apps.ocp4-cluster-001.sandbox.okd/10.0.6.10
-srv-host=_etcd-server-ssl._tcp.ocp4-cluster-001.sandbox.okd,control-plane-0.ocp4-cluster-001.sandbox.okd,2380,0,10
+local=/sandbox.okd.local/
+address=/apps.sandbox.okd.local/10.0.6.10
+srv-host=_etcd-server-ssl._tcp.sandbox.okd.local,control-plane-0.sandbox.okd.local,2380,0,10
 no-hosts
 addn-hosts=/etc/dnsmasq.openshift.addnhosts
 conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig
@@ -221,11 +221,11 @@ EOF
       
 ```
 # cat << 'EOF' | sudo tee /etc/dnsmasq.openshift.addnhosts
-10.0.6.10 dns.ocp4-clusters.sandbox.okd
-10.0.5.57 lb.ocp4-cluster-001.sandbox.okd  api.ocp4-cluster-001.sandbox.okd  api-int.ocp4-cluster-001.sandbox.okd
-10.0.5.58 bootstrap.ocp4-cluster-001.sandbox.okd
-10.0.5.59 control-plane-0.ocp4-cluster-001.sandbox.okd  etcd-0.ocp4-cluster-001.sandbox.okd
-10.0.5.62 compute-0.ocp4-cluster-001.sandbox.okd
+10.0.6.10 dns.okd.local
+10.0.5.57 lb.sandbox.okd.local  api.sandbox.okd.local  api-int.sandbox.okd.local
+10.0.5.58 bootstrap.sandbox.okd.local
+10.0.5.59 control-plane-0.sandbox.okd.local  etcd-0.sandbox.okd.local
+10.0.5.62 compute-0.sandbox.okd.local
 EOF
 ```
 
@@ -246,10 +246,10 @@ Objective: install load balancer virtual machine:
 - OS: CentOS 7
 - static IP: 10.0.5.57
 - mac: 52:54:00:00:05:57
-- dns: lb.ocp4-cluster-001.sandbox.okd
+- dns: lb.sandbox.okd.local
 
 ```
-# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-cl -D ocp4-cluster-001.sandbox.okd -M 52:54:00:00:05:57 lb.ocp4-cluster-001.sandbox.okd
+# ./kvm-install-vm create -a -t centos7 -c 1 -d 10 -b virbr-os-cl -D sandbox.okd.local -M 52:54:00:00:05:57 lb.sandbox.okd.local
 ```
 
 Even if we have one instance of the Control Plane we will setup an HA Proxy (it will next be bind with a domain name).
@@ -436,20 +436,20 @@ $TTL    604800
 ns1.sandbox.okd.          IN      A       10.0.6.10
 
 ; OpenShift Container Platform Cluster - A records
-bootstrap.ocp4-cluster-001.sandbox.okd.        IN      A      10.0.5.58
-control-plane-0.ocp4-cluster-001.sandbox.okd.        IN      A      10.0.5.59
-compute-0.ocp4-cluster-001.sandbox.okd.        IN      A      10.0.5.62
+bootstrap.sandbox.okd.local.        IN      A      10.0.5.58
+control-plane-0.sandbox.okd.local.        IN      A      10.0.5.59
+compute-0.sandbox.okd.local.        IN      A      10.0.5.62
 
 ; OpenShift internal cluster IPs - A records
-api.ocp4-cluster-001.sandbox.okd.    IN    A    10.0.6.10
-api-int.ocp4-cluster-001.sandbox.okd.    IN    A    10.0.6.10
-*.apps.ocp4-cluster-001.sandbox.okd.    IN    A    10.0.6.10
-etcd-0.ocp4-cluster-001.sandbox.okd.    IN    A     10.0.5.59
-console-openshift-console.apps.ocp4-cluster-001.sandbox.okd.     IN     A     10.0.6.10
-oauth-openshift.apps.ocp4-cluster-001.sandbox.okd.     IN     A     10.0.6.10
+api.sandbox.okd.local.    IN    A    10.0.6.10
+api-int.sandbox.okd.local.    IN    A    10.0.6.10
+*.apps.sandbox.okd.local.    IN    A    10.0.6.10
+etcd-0.sandbox.okd.local.    IN    A     10.0.5.59
+console-openshift-console.apps.sandbox.okd.local.     IN     A     10.0.6.10
+oauth-openshift.apps.sandbox.okd.local.     IN     A     10.0.6.10
 
 ; OpenShift internal cluster IPs - SRV records
-_etcd-server-ssl._tcp.ocp4-cluster-001.sandbox.okd.    86400     IN    SRV     0    10    2380    etcd-0.ocp4-cluster-001
+_etcd-server-ssl._tcp.sandbox.okd.local.    86400     IN    SRV     0    10    2380    etcd-0.ocp4-cluster-001
 EOF
 ```
 
@@ -471,9 +471,9 @@ $TTL    604800
 10.0.6.10    IN    PTR    ns1.sandbox.okd.
 
 ; OpenShift Container Platform Cluster - PTR records
-10.0.5.58    IN    PTR    bootstrap.ocp4-cluster-001.sandbox.okd.
-10.0.5.59    IN    PTR    control-plane-0.ocp4-cluster-001.sandbox.okd.
-10.0.5.62    IN    PTR    compute-0.ocp4-cluster-001.sandbox.okd.
+10.0.5.58    IN    PTR    bootstrap.sandbox.okd.local.
+10.0.5.59    IN    PTR    control-plane-0.sandbox.okd.local.
+10.0.5.62    IN    PTR    compute-0.sandbox.okd.local.
 EOF
 ```
 
@@ -545,7 +545,7 @@ so `UU6iS/x4vtKZnQfzhP3O64XNVVKtWTxGASGlmmC+FAQ VM Login ssh key`
 # Hostname management
 preserve_hostname: False
 hostname: dns
-fqdn: dns.ocp4-clusters.sandbox.okd
+fqdn: dns.okd.local
 
 # Users
 users:
