@@ -7,6 +7,7 @@
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
     fedora_coreos_cloud_image_name: "fedora-coreos-31.20200310.3.0-qemu.x86_64.qcow2"
     vms_path: "/home/{{ ansible_user_id }}/.okd/vms"
+    dns_ip: "10.0.6.10"
     dns_name: "bootstrap.sandbox.okd.local"
   block:
     - name: List virtual machines
@@ -76,20 +77,31 @@
                 line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
       when: vm_name in vms.list_vms
-# TODO nope je dois tester que le container-registry est accessible !!!
+
     - name: Should {{ vm_name }} virtual machine is well configured
       block:
-        - name: Should wildcard *.apps.sandbox.okd.local on {{ vm_name }} virtual machine resolve to load balander
+        - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
           block:
-            - name: Execute Host resolution
-              shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.sandbox.okd.local +short'
+            - name: Execute dns virtual machine resolution in {{ vm_name }} VM
+              shell: ssh centos@{{ ip }} 'dig dns.okd.local +short'
               register: ip_resolved
             - debug:
                 msg: "{{ ip_resolved }}"
             - name: Ensure ip resolved to dns virtual machine ip
               assert:
                 that:
-                  - "'10.0.5.57' == ip_resolved.stdout"
+                  - "'{{ dns_ip }}' == ip_resolved.stdout"
+        - name: Should container-registry.sandbox.okd.local on {{ vm_name }} virtual machine resolve to container-registry.sandbox.okd.local
+          block:
+            - name: Execute Host resolution
+              shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig container-registry.sandbox.okd.local +short'
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to container registry virtual machine ip
+              assert:
+                that:
+                  - "'10.0.5.10' == ip_resolved.stdout"
         - name: Should external dns resolution is working in {{ vm_name }} virtual machine
           block:
             - name: Execute external DNS resolution
@@ -103,6 +115,7 @@
                   - "ips_resolved is defined"
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
+
     - name: Wait for {{ vm_name }} to be ready to serve control planes configuration
       uri:
         url: https://api-int.sandbox.okd.local:22623/config/master

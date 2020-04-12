@@ -1,0 +1,16 @@
+---
+- name: Should {{ item.vm_name }} virtual machine resolved this full qualified domain name entrie
+  vars:
+    fqdn: {{ item.fqdn }}
+    ip_to_resolve: {{ item.ip_to_resolve }}
+  block:
+    - name: Execute full qualified domain name resolution
+        shell: ssh {{ ansible_user_id }}@{{ ip_to_resolve }} 'dig {{ fqdn }} +short'
+        register: ip_resolved
+    - debug:
+        msg: "{{ ip_resolved }}"
+    - name: Ensure ip resolved to dns virtual machine ip
+      assert:
+        that:
+          - "ip_to_resolve == ip_resolved.stdout"
+

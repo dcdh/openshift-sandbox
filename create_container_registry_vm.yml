@@ -8,6 +8,7 @@
     vms_path: "{{ installer_path }}/vms"
     ip: "10.0.5.10"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
+    dns_ip: "10.0.6.10"
     dns_name: "container-registry.sandbox.okd.local"
     domain_crt: "{{ installer_path }}/domain.crt"
     domain_key: "{{ installer_path }}/domain.key"
@@ -164,41 +165,34 @@
                 line: "{{ dns_name }},{{ task_result.stdout }}"
                 backup: yes
       when: vm_name in vms.list_vms
-    - name: Check wildcard *.apps.sandbox.okd.local on {{ vm_name }} virtual machine resolve to load balander
+
+    - name: Should {{ vm_name }} virtual machine is well configured
       block:
-        - name: Execute Host resolution
-          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig test.apps.sandbox.okd.local +short'
-          register: ip_resolved
-        - debug:
-            msg: "{{ ip_resolved }}"
-        - name: Ensure ip resolved to dns virtual machine ip
-          assert:
-            that:
-              - "'10.0.5.57' == ip_resolved.stdout"
-    - name: Check container-registry.sandbox.okd.local on HOST resolve to container-registry
-      block:
-        - name: Execute Host resolution
-          shell: dig container-registry.sandbox.okd.local +short
-          register: ip_resolved
-        - debug:
-            msg: "{{ ip_resolved }}"
-        - name: Ensure ip resolved to container-registry virtual machine ip
-          assert:
-            that:
-              - "'{{ ip }}' == ip_resolved.stdout"
-    - name: Check external dns resolution is working in {{ vm_name }} virtual machine
-      block:
-        - name: Execute Host resolution
-          shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig google.fr +short'
-          register: ips_resolved
-        - debug:
-            msg: "{{ ips_resolved }}"
-        - name: Ensure external host is resolved
-          assert:
-            that:
-              - "ips_resolved is defined"
-              - "ips_resolved.stdout_lines is defined"
-              - "ips_resolved.stdout_lines|length > 0"
+        - name: Check dns virtual machine is resolvable in {{ vm_name }} VM
+          block:
+            - name: Execute dns virtual machine resolution in {{ vm_name }} VM
+              shell: ssh centos@{{ ip }} 'dig dns.okd.local +short'
+              register: ip_resolved
+            - debug:
+                msg: "{{ ip_resolved }}"
+            - name: Ensure ip resolved to dns virtual machine ip
+              assert:
+                that:
+                  - "'{{ dns_ip }}' == ip_resolved.stdout"
+        - name: Should resolved quai.io container registry
+          block:
+            - name: Execute quai.io DNS resolution
+              shell: ssh {{ ansible_user_id }}@{{ ip }} 'dig quay.io +short'
+              register: ips_resolved
+            - debug:
+                msg: "{{ ips_resolved }}"
+            - name: Ensure external host is resolved
+              assert:
+                that:
+                  - "ips_resolved is defined"
+                  - "ips_resolved.stdout_lines is defined"
+                  - "ips_resolved.stdout_lines|length > 0"
+
     - name: Wait {{ vm_name }} container registry service is active
       shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-active podman-registry.service'
       register: task_result
