@@ -489,6 +489,11 @@ curl -L -k https://api-int.sandbox.okd.local:22623/config/master > reponse_boots
 
 
 
+curl -L -k https://localhost:22623/config/master
+curl -L -k https://localhost:22623/config/worker
+
+
+
 
 journalctl -u machine-config-daemon-firstboot.service
 
@@ -533,3 +538,41 @@ systemctl start machine.slice
 
 TODO: essayer avec la beta ...
 
+
+
+  https://github.com/openshift/installer/blob/master/docs/user/troubleshooting.md#installer-fails-to-initialize-the-cluster
+The status of the Machine API Operator can be checked by running the following command from the machine used to install the cluster:
+
+  [damien@localhost .okd]$ oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api get deployments
+  NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+  machine-api-operator   0/1     1            0           11m
+  [damien@localhost .okd]$ oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api get deployments
+  NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+  machine-api-operator   0/1     1            0           11m
+  [damien@localhost .okd]$ oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api get deployments
+  NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+  machine-api-operator   1/1     1            1           15m
+  [damien@localhost .okd]$ oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api get deployments
+  NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+  machine-api-operator   1/1     1            1           15m
+
+
+oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api get deployments
+oc --kubeconfig=./auth/kubeconfig --namespace=openshift-machine-api logs deployments/machine-api-controllers --container=machine-controller
+oc --kubeconfig=./auth/kubeconfig get clusteroperator
+
+case of dns failing
+oc --kubeconfig=./auth/kubeconfig get clusteroperator dns -oyaml
+
+oc --kubeconfig=./auth/kubeconfig get pods --all-namespaces
+> commande super interessante pour voir tous les pods et leur état !!!
+
+openshift-dns-operator
+
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-dns-operator pod/dns-operator-6666c7b7f-9mstk
+
+Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
+Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
+Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 1 node(s) had taints that the pod didn't tolerate, 2 Insufficient cpu.
+Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
+Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.

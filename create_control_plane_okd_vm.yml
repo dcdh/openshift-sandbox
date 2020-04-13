@@ -41,7 +41,7 @@
           vars:
             name: "{{ vm_name }}"
             memory: 8192
-            vcpus: 1
+            vcpus: 4
             disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "{{ mac }}"
             vm_bridge: "virbr1"
