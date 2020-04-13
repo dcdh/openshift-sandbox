@@ -3,6 +3,11 @@
   vars:
     installer_path: "/home/{{ ansible_user_id }}/.okd"
   block:
+    - name: Remove KUBECONFIG environment variable
+      lineinfile:
+        path: "/home/{{ ansible_user_id }}/.bashrc"
+        state: absent
+        regexp: '^.*KUBECONFIG.*$'
     - name: Clean prerequisite installation
       file:
         path: "{{ item }}"

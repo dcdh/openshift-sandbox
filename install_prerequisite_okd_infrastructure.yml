@@ -40,6 +40,12 @@
       become: true
       become_user: root
       mode: u+rwx,g+rwx,o+rwx
+    - name: Add KUBECONFIG environment variable to avoid referencing it using --kubeconfig= when doing oc command
+      lineinfile:
+        path: "/home/{{ ansible_user_id }}/.bashrc"
+        insertafter: EOF
+        line: "export KUBECONFIG=/home/{{ ansible_user_id }}/.okd/auth/kubeconfig"
+        backup: yes
     - name: Download okd installer
       get_url:
         url: https://github.com/openshift/okd/releases/download/{{ okd_version }}/openshift-install-linux-{{ okd_version }}.tar.gz
