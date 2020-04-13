@@ -13,6 +13,8 @@
     domain_crt: "{{ installer_path }}/domain.crt"
     pull_secret: "/home/damien/Téléchargements/pull-secret" # FIXME
   block:
+    - name: Delete previous installation
+      include: uninstall_prerequisite_okd_infrastructure.yml
     - name: Update / Install needed package for qemu following fail to use fw_cfg https://www.spinics.net/lists/centos/msg166715.html
       yum:
         name: "{{ packages }}"

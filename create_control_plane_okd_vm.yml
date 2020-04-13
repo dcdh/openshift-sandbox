@@ -1,7 +1,7 @@
 ---
 - name: Create control plane {{ item.index }} virtual machine
   vars:
-    vm_name: "control_plane_{{ item.index }}.sandbox.okd.local"
+    vm_name: "control-plane-{{ item.index }}.sandbox.okd.local"
     ip: "{{ item.ip }}"
     mac: "{{ item.mac }}"
     images_path: "/home/{{ ansible_user_id }}/.okd/images"
@@ -124,19 +124,19 @@
                   - "ips_resolved is defined"
                   - "ips_resolved.stdout_lines is defined"
                   - "ips_resolved.stdout_lines|length > 0"
-
-    - name: Restart machine-config-daemon-firstboot.service if it has failed to start on {{ vm_name }} virtual machine
-      block:
-        - name: Retrieve machine-config-daemon-firstboot.service status
-          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-failed machine-config-daemon-firstboot.service'
-          register: task_result
-          until: task_retrieve_status_result.rc == 0
-          retries: 120
-          delay: 5
-        - name: Restart machine-config-daemon-firstboot.service
-          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
-          register: task_restart_result
-          until: task_restart_result.rc == 0
-          retries: 120
-          delay: 5
-          when: task_retrieve_status_result.stdout == 'failed'
+#
+#    - name: Restart machine-config-daemon-firstboot.service if it has failed to start on {{ vm_name }} virtual machine
+#      block:
+#        - name: Retrieve machine-config-daemon-firstboot.service status
+#          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl is-failed machine-config-daemon-firstboot.service'
+#          register: task_retrieve_status_result
+#          until: task_retrieve_status_result.rc == 0
+#          retries: 120
+#          delay: 5
+#        - name: Restart machine-config-daemon-firstboot.service
+#          shell: ssh {{ ansible_user_id }}@{{ ip }} 'sudo systemctl restart machine-config-daemon-firstboot.service'
+#          register: task_restart_result
+#          until: task_restart_result.rc == 0
+#          retries: 120
+#          delay: 5
+#          when: task_retrieve_status_result.stdout == 'failed'
