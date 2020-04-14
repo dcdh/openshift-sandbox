@@ -75,7 +75,7 @@
                 - name: Save iptable rules
                   shell: "service iptables save"
 #        - name: Should {{ bridge_name }} be forwarded HOW TO TEST ???
-    - name: Setup Host dnsmasq used for dhcp configuration
+    - name: Setup Host {{ bridge_name }} dnsmasq used for dhcp configuration
       block:
         - name: Create {{ bridge_name }} directory
           file:
@@ -162,11 +162,33 @@
             mode: u=rw,g=r,o=r
             owner: root
             group: root
-        - name: Create persistente execution of dnsmasq
+        - name: Create persistente execution of {{ bridge_name }} dnsmasq service
           block:
-            - name: Enable dnsmasq service
+            - name: Create {{ bridge_name }} dnsmasq service
+              copy:
+                dest: /etc/systemd/system/dnsmasq@.service
+                content: |
+                  # '%i' becomes 'virbr10' when running `systemctl start dnsmasq@virbr10.service`
+                  # Remember to run `systemctl daemon-reload` after creating or editing this file.
+
+                  [Unit]
+                  Description=DHCP and DNS caching server for %i.
+                  After=network.target
+
+                  [Service]
+                  ExecStart=/usr/sbin/dnsmasq -k --conf-file=/var/lib/dnsmasq/%i/dnsmasq.conf
+                  ExecReload=/bin/kill -HUP $MAINPID
+                  Restart=on-failure
+                  RestartSec=5
+
+                  [Install]
+                  WantedBy=multi-user.target
+                mode: u=rwx,g=rx,o=rx
+                owner: root
+                group: root
+            - name: Enable {{ bridge_name }} dnsmasq service
               shell: systemctl enable dnsmasq@{{ bridge_name }}.service
-            - name: Start dnsmasq service
+            - name: Start {{ bridge_name }} dnsmasq service
               shell: systemctl start dnsmasq@{{ bridge_name }}.service
         - name: Should defined dnsmasq be reachable
           wait_for:

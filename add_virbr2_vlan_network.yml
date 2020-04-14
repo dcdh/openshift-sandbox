@@ -98,7 +98,7 @@
                 - name: Save iptable rules
                   shell: "service iptables save"
 #        - name: Should {{ bridge_name }} be forwarded HOW TO TEST ???
-    - name: Setup Host dnsmasq used for dhcp configuration
+    - name: Setup Host {{ bridge_name }} dnsmasq used for dhcp configuration
       block:
         - name: Create {{ bridge_name }} directory
           file:
@@ -179,9 +179,9 @@
             mode: u=rw,g=r,o=r
             owner: root
             group: root
-        - name: Create persistente execution of dnsmasq
+        - name: Create persistente execution of {{ bridge_name }} dnsmasq service
           block:
-            - name: Create service
+            - name: Create {{ bridge_name }} dnsmasq service
               copy:
                 dest: /etc/systemd/system/dnsmasq@.service
                 content: |
@@ -203,9 +203,9 @@
                 mode: u=rwx,g=rx,o=rx
                 owner: root
                 group: root
-            - name: Enable dnsmasq service
+            - name: Enable {{ bridge_name }} dnsmasq service
               shell: systemctl enable dnsmasq@{{ bridge_name }}.service
-            - name: Start dnsmasq service
+            - name: Start {{ bridge_name }} dnsmasq service
               shell: systemctl start dnsmasq@{{ bridge_name }}.service
         - name: Should defined dnsmasq be reachable
           wait_for:
