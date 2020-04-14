@@ -48,21 +48,12 @@
             owner: "{{ ansible_user_id }}"
             group: "{{ ansible_user_id }}"
             force: no
-        - name: check if metada-data file is defined
-          stat:
-            path: "{{ vm_path }}/meta-data"
-          register: meta_data
         - name: Create meta-data file
           copy:
             dest: "{{ vm_path }}/meta-data"
             content: |
               instance-id: {{ vm_name }}
               local-hostname: {{ vm_name }}
-          when: meta_data.stat.exists == False
-        - name: check if user-data file is defined
-          stat:
-            path: "{{ vm_path }}/user-data"
-          register: user_data
         - name: Create user-data file
           copy:
             dest: "{{ vm_path }}/user-data"
