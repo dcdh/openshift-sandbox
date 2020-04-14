@@ -2,10 +2,10 @@
 - name: This playbook deploy OKD 4 on a local server
   hosts: localhost
   tasks:
-    - name: Add virbr0 vlan for dns virtual machine
-      include: add_virbr0_vlan_network.yml
     - name: Add virbr1 vlan for sandbox okd cluster virtual machines
       include: add_virbr1_vlan_network.yml
+    - name: Add virbr2 vlan for dns virtual machine
+      include: add_virbr2_vlan_network.yml
     - name: Add fix bridge permissions for user
       include: add_fix_bridge_permissions_for_user.yml
     - name: Create dns virtual machine

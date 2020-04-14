@@ -1,7 +1,7 @@
 ---
-- name: Delete virbr0 vlan network
+- name: Delete virbr2 vlan network
   vars:
-    bridge_name: "virbr0"
+    bridge_name: "virbr2"
   block:
     - name: Delete {{ bridge_name }} interface
       file:
@@ -19,12 +19,10 @@
         state: absent
     - name: Flush iptable entries
       block:
-        - name: Remove forward all input in interface {{ bridge_name }}
-          shell: iptables -D FORWARD --in-interface {{ bridge_name }} -j ACCEPT
-          ignore_errors: yes
-        - name: Remove forward all output in interface {{ bridge_name }}
-          shell: iptables -D FORWARD --out-interface {{ bridge_name }} -j ACCEPT
-          ignore_errors: yes
+        - name: |
+            Remove all previous forward rules regarding {{ bridge_name }}
+            https://stackoverflow.com/questions/25055121/can-i-remove-multiple-matching-rules-with-the-iptables-delete-command
+          shell: "iptables -S FORWARD | grep {{ bridge_name }} | cut -d ' ' -f 2- | xargs -rL1 iptables -D"
         - name: Save iptable rules
           shell: "service iptables save"
   become: true

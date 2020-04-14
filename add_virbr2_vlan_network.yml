@@ -1,6 +1,6 @@
 ---
 - name: |
-    Add virbr0 vlan network for dns virtual machine
+    Add virbr2 vlan network for dns virtual machine
     Add host okd clusters network following documentation available here https://jamielinux.com/docs/libvirt-networking-handbook/custom-nat-based-network.html
     By default libvirt handle iptable rules automatically. However the iptable is not saved after libvirt modification.
     if the service iptables is restarted all the changed previously done by libvirt is lost. You need to send a SIGUP to the libvert pid to regenerate iptable rules.
@@ -8,7 +8,7 @@
     So I decided to provide my own custom setup following the previous documentation.
   vars:
     default_network_name: default
-    bridge_name: "virbr0"
+    bridge_name: "virbr2"
     bridge_mac: "52:54:00:00:06:01"
     bridge_ip: "10.0.6.1"
     dns_mac: "52:54:00:00:06:10"
@@ -78,6 +78,10 @@
           block:
             - name: Setup iptables rules on Host to allow SSH to connect on the fly instead of hanging ...
               block:
+                - name: |
+                    Remove all previous forward rules regarding {{ bridge_name }}
+                    https://stackoverflow.com/questions/25055121/can-i-remove-multiple-matching-rules-with-the-iptables-delete-command
+                  shell: "iptables -S FORWARD | grep {{ bridge_name }} | cut -d ' ' -f 2- | xargs -rL1 iptables -D"
                 - name: Forward all input in interface {{ bridge_name }}
                   shell: "iptables -I FORWARD 1 --in-interface {{ bridge_name }} -j ACCEPT"
                 - name: Forward all output out interface {{ bridge_name }}
@@ -106,6 +110,18 @@
           with_items:
             - "/var/lib/dnsmasq"
             - "/var/lib/dnsmasq/{{ bridge_name }}"
+        - name:
+            Create {{ bridge_name }} specific resolv.conf.
+            If a nameserver is defined to my dns.okd.local ip and defined to /etc/resolv.conf and this one is not started, making ssh request on dns.okd.local ip will hang.
+            Example nameserver = 10.0.6.10 ... ssh damien@10.0.6.10 will do a lot of lookup on an unresponsive dns server. And it will be hard to connect and make my requests failing.
+            I could get default nameserver but I prefer to rely to 8.8.8.8 google one !
+          copy:
+            dest: /var/lib/dnsmasq/{{ bridge_name }}/resolv.conf
+            content: |
+              nameserver 8.8.8.8
+            mode: u=rw,g=r,o=r
+            owner: root
+            group: root
         - name: Create {{ bridge_name }} dnsmasq.conf
           copy:
             dest: /var/lib/dnsmasq/{{ bridge_name }}/dnsmasq.conf
@@ -115,6 +131,7 @@
               except-interface=lo
               interface={{ bridge_name }}
               bind-dynamic
+              resolv-file=/var/lib/dnsmasq/{{ bridge_name }}/resolv.conf
 
               # If using dnsmasq 2.62 or older, remove "bind-dynamic" and "interface" lines
               # and uncomment these lines instead:

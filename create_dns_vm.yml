@@ -9,7 +9,7 @@
     centos7_cloud_image_url: "https://cloud.centos.org/centos/7/images/{{ centos7_cloud_image_name }}"
     mac: "52:54:00:00:06:10"
     ip: "10.0.6.10"
-    bridge: "virbr0"
+    bridge: "virbr2"
     bridge_ip: "10.0.6.1"
     ssh_public_key: "/home/{{ ansible_user_id }}/.ssh/id_rsa.pub"
     dns_name: "dns.okd.local"
@@ -148,7 +148,6 @@
                 - /bin/cp /run/myconf/dnsmasq.okd.addnhosts /etc/dnsmasq.okd.addnhosts
                 - systemctl enable dnsmasq
                 - systemctl start dnsmasq
-          when: user_data.stat.exists == False
         - name: Create boot init iso
           shell:
             cmd: genisoimage -output {{ boot_init_iso_path }} -volid cidata -joliet -r {{ vm_path }}/user-data {{ vm_path }}/meta-data
@@ -210,6 +209,9 @@
             - name: Get {{ vm_name }} dnsmasq service status
               shell: ssh centos@{{ ip }} 'sudo systemctl is-active dnsmasq'
               register: is_active
+              until: is_active.rc == 0
+              retries: 120
+              delay: 5
             - debug:
                 msg: "{{ is_active }}"
             - name: Ensure {{ vm_name }} dnsmasq service is active
