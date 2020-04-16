@@ -40,7 +40,7 @@
             uri: "qemu:///session"
           vars:
             name: "{{ vm_name }}"
-            memory: 8192
+            memory: 16384
             vcpus: 4
             disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "{{ mac }}"

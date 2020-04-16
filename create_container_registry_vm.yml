@@ -128,7 +128,7 @@
             uri: "qemu:///session"
           vars:
             name: "{{ vm_name }}"
-            memory: 8192
+            memory: 4096
             vcpus: 1
             disk_file: "{{ vms_path }}/{{ vm_name }}/{{ fedora_coreos_cloud_image_name }}"
             vm_mac: "52:54:00:00:05:10"
@@ -212,6 +212,8 @@
       retries: 100
       delay: 1
       loop:
+        - {name: 'cluster-version-operator'                       , imageId: 'quay.io/openshift/okd@sha256:935c24cacf63a9979cb7469560a41feb33dc4f2d2e668710420f4c0191eb4eb1'        , registryMirrorImage: 'openshift/okd'}
+
         - {name: 'aws-machine-controllers'                        , imageId: 'quay.io/openshift/okd-content@sha256:2a39cd7f86fd2ecc98d65e0a84c93d8263ecf31aafb3d49b138a84192301f092', registryMirrorImage: 'openshift/okd-content'}
         - {name: 'azure-machine-controllers'                      , imageId: 'quay.io/openshift/okd-content@sha256:81939c4826f3f497833b0761d42ad2e611f7e9180a9117a97ae7f4c78f1fe254', registryMirrorImage: 'openshift/okd-content'}
         - {name: 'baremetal-installer'                            , imageId: 'quay.io/openshift/okd-content@sha256:4d41c931915f34134e4490fd2bcd7fbaf77c108fe2b51b42c3fefd4b4d184423', registryMirrorImage: 'openshift/okd-content'}

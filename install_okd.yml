@@ -1,6 +1,8 @@
 ---
 - name: This playbook deploy OKD 4 on a local server
   hosts: localhost
+  vars:
+    installer_path: "/home/{{ ansible_user_id }}/.okd"
   tasks:
     - name: Add virbr1 vlan for sandbox okd cluster virtual machines
       include: add_virbr1_vlan_network.yml
@@ -25,4 +27,53 @@
         - {index: 1, ip: '10.0.5.60', mac: '52:54:00:00:05:60'}
         - {index: 2, ip: '10.0.5.61', mac: '52:54:00:00:05:61'}
 
-#- import_playbook: create_worker_0_okd_vm.yml
+    - name: |
+        Wait until bootstrap has complete is work.
+        To know it ALL control planes MUST BE UP (to be able to request using oc) and we check the configmaps status for bootstrap
+      shell: /usr/bin/oc --kubeconfig={{ installer_path }}/auth/kubeconfig get -n kube-system configmaps bootstrap -o jsonpath='{.data.status}'
+      register: task_result
+      until: task_result.rc == 0 and task_result.stdout == 'complete'
+      retries: 120
+      delay: 60
+
+    - name: |
+        Delete bootstrap okd virtual machine as bootstrap has completed is work and is no more usefull.
+        I should remove entries in load balancer too but haproxy will consider the bootstrap server as down and do not forward trafic on it after three fails
+      include: delete_bootstrap_okd_vm.yml
+
+#    - name: |
+#        Wait for control planes to be ready to serve workers configuration
+#        All control planes must be working to make request works !
+#        Bootstrap can be removed at this stage
+#      shell: curl --silent --fail -k https://{{ item }}:22623/config/worker > /dev/null
+#      register: task_result
+#      until: task_result.rc == 0
+#      retries: 120
+#      delay: 60
+#      loop:
+#        - 'control-plane-0.sandbox.okd.local'
+##        - 'control-plane-1.sandbox.okd.local'
+##        - 'control-plane-2.sandbox.okd.local'
+#
+#    - name: Approve current pending certs
+#      shell:
+#        cmd: oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+#      args:
+#        executable: /bin/bash
+
+    - name: |
+        Start workers virtual machines
+        Three workers must be started to satisfy the selector in openshift-ingress pod/router-default-...
+      include: create_worker_okd_vm.yml
+      with_items:
+        - {index: 0, ip: '10.0.5.62', mac: '52:54:00:00:05:62'}
+        - {index: 1, ip: '10.0.5.63', mac: '52:54:00:00:05:63'}
+        - {index: 2, ip: '10.0.5.64', mac: '52:54:00:00:05:64'}
+
+# TODO verifier qu'il n'y pas de certificats en attente...
+# oc --kubeconfig=./auth/kubeconfig get csr
+
+# TODO associer les workers une fois qu'ils sont up ...
+# TODO verifier que ingress est ok
+# TODO accéder à la console :)
+# pour cela lancer le script openshift-install wait-for install-complete --log-level debug et comprendre comment il marche

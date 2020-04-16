@@ -48,22 +48,18 @@
             owner: "{{ ansible_user_id }}"
             group: "{{ ansible_user_id }}"
             force: no
-        - name: check if metada-data file is defined
-          stat:
-            path: "{{ vm_path }}/meta-data"
-          register: meta_data
         - name: Create meta-data file
           copy:
             dest: "{{ vm_path }}/meta-data"
             content: |
               instance-id: {{ vm_name }}
               local-hostname: {{ vm_name }}
-          when: meta_data.stat.exists == False
-        - name: check if user-data file is defined
-          stat:
-            path: "{{ vm_path }}/user-data"
-          register: user_data
-        - name: Create user-data file
+        - name: |
+            Create user-data file.
+            Full Qualified Domain Name are used (instead of ip) to increase readibility and to use dynamic ip - which will not be the case here.
+            BIG plus: haproxy will fail to start if a fqdn can not be resolved and that very cool to ensure that configuration
+            is well defined.
+            To know if the conf is valid do it inside the virtual machine: haproxy -c -f /etc/haproxy/haproxy.cfg
           copy:
             dest: "{{ vm_path }}/user-data"
             content: |
@@ -185,6 +181,8 @@
                         balance roundrobin
                         mode tcp
                         server      compute-0 compute-0.sandbox.okd.local:80 check
+                        server      compute-1 compute-1.sandbox.okd.local:80 check
+                        server      compute-2 compute-2.sandbox.okd.local:80 check
 
                     frontend ocp4_https_ingress_traffic_fe
                         bind :443
@@ -196,6 +194,8 @@
                         balance roundrobin
                         mode tcp
                         server      compute-0 compute-0.sandbox.okd.local:443 check
+                        server      compute-1 compute-1.sandbox.okd.local:443 check
+                        server      compute-2 compute-2.sandbox.okd.local:443 check
                   path: /run/myconf/haproxy.cfg
                 - content: |
                     supersede domain-name-servers {{ dns_ip }};
@@ -214,7 +214,6 @@
                 - setsebool -P haproxy_connect_any on
                 - systemctl start haproxy
                 - systemctl enable haproxy
-          when: user_data.stat.exists == False
         - name: Create boot init iso
           shell:
             cmd: genisoimage -output {{ boot_init_iso_path }} -volid cidata -joliet -r {{ vm_path }}/user-data {{ vm_path }}/meta-data
@@ -276,6 +275,9 @@
             - name: Get {{ vm_name }} haproxy service status
               shell: ssh centos@{{ ip }} 'sudo systemctl is-active haproxy'
               register: is_active
+              until: is_active.stdout != ''
+              retries: 120
+              delay: 10
             - debug:
                 msg: "{{ is_active }}"
             - name: Ensure {{ vm_name }} haproxy service is active

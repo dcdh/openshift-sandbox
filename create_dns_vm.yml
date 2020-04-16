@@ -117,6 +117,8 @@
                     10.0.5.60 control-plane-1.sandbox.okd.local  etcd-1.sandbox.okd.local
                     10.0.5.61 control-plane-2.sandbox.okd.local  etcd-2.sandbox.okd.local
                     10.0.5.62 compute-0.sandbox.okd.local
+                    10.0.5.63 compute-1.sandbox.okd.local
+                    10.0.5.64 compute-2.sandbox.okd.local
                   path: /run/myconf/dnsmasq.okd.addnhosts
                 - content: |
                     # The objectif is to overide the definition of nameserver in /etc/resolv.conf
@@ -258,6 +260,8 @@
             - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.61', fqdn: 'control-plane-2.sandbox.okd.local'}
             - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.61', fqdn: 'etcd-2.sandbox.okd.local'}
             - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.62', fqdn: 'compute-0.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.63', fqdn: 'compute-1.sandbox.okd.local'}
+            - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.64', fqdn: 'compute-2.sandbox.okd.local'}
             - {ip_from: "{{ ip }}", ip_to_resolve: '10.0.5.57', fqdn: 'test.apps.sandbox.okd.local'}
 # TODO check SRV cf https://support.microsoft.com/fr-fr/help/816587/how-to-verify-that-srv-dns-records-have-been-created-for-a-domain-cont
         - name: Should external dns resolution is working in {{ vm_name }} virtual machine

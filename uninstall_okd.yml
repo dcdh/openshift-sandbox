@@ -25,4 +25,11 @@
         - {index: 1, ip: '10.0.5.60'}
         - {index: 2, ip: '10.0.5.61'}
 
+    - name: Delete workers virtual machines
+      include: delete_worker_okd_vm.yml
+      with_items:
+        - {index: 0, ip: '10.0.5.62'}
+        - {index: 1, ip: '10.0.5.63'}
+        - {index: 2, ip: '10.0.5.64'}
+
 #- import_playbook: delete_worker_0_okd_vm.yml

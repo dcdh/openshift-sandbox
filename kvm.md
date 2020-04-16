@@ -61,11 +61,13 @@ The main objective is to run a local instance as a testing purpose.
 | ------------------ | ---:| ----:| -------:| -------------:| ----------:| ----------------: | :------------------------------------|
 | DNS                |   1 |  1GB |    10GB | CentOS 7      |  10.0.6.10 | 52:54:00:00:06:10 | dns.okd.local                        |
 | Container Registry |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.10 | 52:54:00:00:05:10 | container-registry.sandbox.okd.local |
-| Load Balancer      |   1 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.sandbox.okd.local                 |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.sandbox.okd.local    |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.sandbox.okd.local    |
-| Control Plane      |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.sandbox.okd.local    |
-| Worker             |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.sandbox.okd.local          |
+| Load Balancer      |   4 |  1GB |    10GB | CentOS 7      |  10.0.5.57 | 52:54:00:00:05:57 | lb.sandbox.okd.local                 |
+| Control Plane      |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.59 | 52:54:00:00:05:59 | control-plane-0.sandbox.okd.local    |
+| Control Plane      |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.60 | 52:54:00:00:05:60 | control-plane-1.sandbox.okd.local    |
+| Control Plane      |   4 |  8GB |    25GB | Fedora CoreOS |  10.0.5.61 | 52:54:00:00:05:61 | control-plane-2.sandbox.okd.local    |
+| Worker             |   2 |  8GB |    25GB | Fedora CoreOS |  10.0.5.62 | 52:54:00:00:05:62 | compute-0.sandbox.okd.local          |
+| Worker             |   2 |  8GB |    25GB | Fedora CoreOS |  10.0.5.63 | 52:54:00:00:05:63 | compute-1.sandbox.okd.local          |
+| Worker             |   2 |  8GB |    25GB | Fedora CoreOS |  10.0.5.64 | 52:54:00:00:05:64 | compute-2.sandbox.okd.local          |
 | Bootstrap          |   1 |  8GB |    25GB | Fedora CoreOS |  10.0.5.58 | 52:54:00:00:05:58 | bootstrap.sandbox.okd.local          |
 
 ## Networks

@@ -1,3 +1,13 @@
+INPUT -i virbr0 -p udp -m udp --dport 53 -j ACCEPT
+INPUT -i virbr0 -p tcp -m tcp --dport 53 -j ACCEPT
+INPUT -i virbr0 -p udp -m udp --dport 67 -j ACCEPT
+INPUT -i virbr0 -p tcp -m tcp --dport 67 -j ACCEPT
+
+
+TODO creer une machine pour hoster un system de fichier nfs !!!
+
+
+
 prio:
 - des que je me connecte en ssh la virtual machine se "plante" !!! et la resolution ne fonctionne plus :S
   cachesize atteint ...
@@ -125,16 +135,16 @@ dans le cluster okd !!! partie dnsmasq
 Rajouter comme configuration
 
 
-touch /etc/dnsmasq.d/virbr0.conf && \
-echo "except-interface=virbr0" >> /etc/dnsmasq.d/virbr0.conf && \
+touch /etc/dnsmasq.d/virbr2.conf && \0
+echo "except-interface=virbr2" >> /etc/dnsmasq.d/virbr2.conf && \
 systemctl restart dnsmasq
 
 service dnsmasq restart
 
 journalctl -u dnsmasq
 
-iptables -A INPUT -i virbr0 -p udp -m udp -m multiport --dports 53,67 -j ACCEPT && \
-  iptables -A INPUT -i virbr0 -p tcp -m tcp -m multiport --dports 53,67 -j ACCEPT
+iptables -A INPUT -i virbr2 -p udp -m udp -m multiport --dports 53,67 -j ACCEPT && \
+  iptables -A INPUT -i virbr2 -p tcp -m tcp -m multiport --dports 53,67 -j ACCEPT
 
 
 iptables -t nat -I POSTROUTING -o wlp82s0 -j MASQUERADE
@@ -143,7 +153,7 @@ iptables -t nat -I POSTROUTING -o wlp82s0 -j MASQUERADE
 
 ip neighbor
 
-dnsmasq --conf-file=/var/lib/dnsmasq/virbr0/dnsmasq.conf --pid-file=/var/run/virbr0.pid
+dnsmasq --conf-file=/var/lib/dnsmasq/virbr2/dnsmasq.conf --pid-file=/var/run/virbr2.pid
 
 > dnsmasq   10179 nobody    7u  IPv4 117760      0t0  TCP 10.0.6.1:53 (LISTEN)
 Youpi !!!
@@ -160,7 +170,7 @@ Youpi !!!
                               pid-file=/var/run/libvirt/network/okd-dns0.pid
                               except-interface=lo
                               bind-dynamic
-                              interface=virbr0
+                              interface=virbr2
                               dhcp-range=10.0.6.10,10.0.6.254
                               dhcp-no-override
                               dhcp-authoritative
@@ -204,9 +214,9 @@ et du coup toutes mes tables de routage changes et bingo cela ne marche plus !!!
 /var/lib/libvirt/dnsmasq
 
 
-openshift-install wait-for bootstrap-complete --log-level debug
+./openshift-install wait-for bootstrap-complete --log-level debug
 
-openshift-install wait-for install-complete --log-level debug
+./openshift-install wait-for install-complete --log-level debug
 
 faire un script pour preparer le Host : soit ipv4 forward ...
 
@@ -569,10 +579,246 @@ oc --kubeconfig=./auth/kubeconfig get pods --all-namespaces
 
 openshift-dns-operator
 
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-ingress pod/router-default-697dfdbdb9-pl6nz
+
+
+
 oc --kubeconfig=./auth/kubeconfig describe -n openshift-dns-operator pod/dns-operator-6666c7b7f-9mstk
+
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-cluster-storage-operator
+csi-snapshot-controller-operator-55f9cdd7f6-kb2dw
 
 Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
 Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
 Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 1 node(s) had taints that the pod didn't tolerate, 2 Insufficient cpu.
 Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
 Warning  FailedScheduling  <unknown>  default-scheduler  0/3 nodes are available: 3 Insufficient cpu.
+
+------------
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-ingress pod/router-default-697dfdbdb9-pl6nz
+
+Tolerations:     node.kubernetes.io/memory-pressure:NoSchedule
+                 node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason            Age                 From               Message
+  ----     ------            ----                ----               -------
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  19m (x14 over 21m)  default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  61s (x21 over 11m)  default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+
+oc --kubeconfig=./auth/kubeconfig get clusteroperator ingress -oyaml
+
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-ingress pod/router-default-697dfdbdb9-pl6nz
+oc --kubeconfig=./auth/kubeconfig logs -n openshift-ingress pod/router-default-697dfdbdb9-pl6nz
+
+oc --kubeconfig=./auth/kubeconfig describe -n openshift-ingress pod/router-default-697dfdbdb9-pl6nz
+
+
+Node-Selectors:  kubernetes.io/os=linux
+                 node-role.kubernetes.io/worker=
+Tolerations:     node.kubernetes.io/memory-pressure:NoSchedule
+                 node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type     Reason            Age                 From               Message
+  ----     ------            ----                ----               -------
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  <unknown>           default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  29m (x14 over 31m)  default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+  Warning  FailedScheduling  36s (x28 over 21m)  default-scheduler  0/3 nodes are available: 3 node(s) didn't match node selector.
+
+Le ingress ne fonctionna pas car il me manque les workers !!!
+
+
+export KUBECONFIG=~/.okd/auth/kubeconfig
+oc whoami
+oc get nodes
+oc get csr
+
+[damien@localhost openshift-sandbox]$ oc get csr
+NAME        AGE    REQUESTOR                                                                   CONDITION
+csr-7gslm   105m   system:node:control-plane-1.sandbox.okd.local                               Approved,Issued
+csr-h8bz2   29m    system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-kpztf   104m   system:node:control-plane-2.sandbox.okd.local                               Approved,Issued
+csr-v4ghm   106m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-wdsfg   105m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-xcl7h   105m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-ztx6q   106m   system:node:control-plane-0.sandbox.okd.local                               Approved,Issued
+[damien@localhost openshift-sandbox]$
+
+wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+
+chmod +x jq
+sudo mv jq /usr/local/bin/
+jq --version
+
+oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+
+oc get clusteroperator
+oc get pods --all-namespaces
+
+oc describe -n openshift-machine-config-operator pod/etcd-quorum-guard-69c6fcb454-2gx28
+
+oc describe -n openshift-kube-apiserver  pod/kube-apiserver-control-plane-0.sandbox.okd.local
+
+
+oc describe -n openshift-machine-config-operator pod/etcd-quorum-guard-69c6fcb454-nj5rx
+
+oc describe -n openshift-kube-apiserver  pod/kube-apiserver-compute-0.sandbox.okd.local
+
+
+oc describe -n openshift-etcd-operator pod/etcd-operator-5bb5599569-wz7nf
+oc logs -n openshift-etcd-operator pod/etcd-operator-5bb5599569-wz7nf -c operator
+
+
+oc get clusteroperator authentication -oyaml
+
+= bootstrap
+
+/system.slice/kubelet.service
+watch systemctl status kubelet.service
+
+
+watch systemctl status bootkube.service
+> active puis fail
+> fail in bootstrap ...
+
+journalctl -b -f -u bootkube.service
+systemctl edit --full bootkube.service
+
+
+/opt/openshift
+podman run --net=host --rm --volume /opt/openshift:/assets:z --volume /etc/kubernetes:/etc/kubernetes:z quay.io/openshift/okd-content@sha256:e80f6486d558776d8b331d7856f5ba3bbaff476764b395e82d279ce86c6bb11d start --tear-down-early=false --asset-dir=/assets --required-pods=openshift-kube-apiserver/kube-apiserver,openshift-kube-scheduler/openshift-kube-scheduler,openshift-kube-controller-manager/kube-controller-manager,openshift-cluster-version/cluster-version-operator
+
+= control plane
+
+systemctl start machine.slice
+
+lsof -i -P -n | grep LISTEN | grep 22623
+curl -k -L https://api-int.sandbox.okd.local:6443
+
+
+[damien@localhost openshift-sandbox]$ oc get csr
+NAME        AGE   REQUESTOR                                                                   CONDITION
+csr-4kpvk   34m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-4mc6q   49m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-9pt8x   49m   system:node:control-plane-0.sandbox.okd.local                               Approved,Issued
+csr-d7lws   48m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-dcffz   10m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-g4kr5   10m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-hn2pt   33m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-n4clv   23s   system:node:compute-2.sandbox.okd.local                                     Pending
+csr-nr6hp   12s   system:node:compute-1.sandbox.okd.local                                     Pending
+csr-nwvvv   50m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-tnrt5   48m   system:node:control-plane-2.sandbox.okd.local                               Approved,Issued
+csr-vk897   28m   system:node:compute-0.sandbox.okd.local                                     Approved,Issued
+csr-vs658   48m   system:node:control-plane-1.sandbox.okd.local                               Approved,Issued
+
+[damien@localhost openshift-sandbox]$ oc get clusteroperator
+NAME                                       VERSION                               AVAILABLE   PROGRESSING   DEGRADED   SINCE
+authentication                                                                   Unknown     Unknown       True       47m
+cloud-credential                           4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      50m
+cluster-autoscaler                         4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      40m
+console                                    4.4.0-0.okd-2020-04-07-175212-beta2   Unknown     True          False      41m
+dns                                        4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      45m
+etcd                                       4.4.0-0.okd-2020-04-07-175212-beta2   True        True          True       39m
+image-registry                             4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      42m
+ingress                                    unknown                               False       True          True       41m
+insights                                   4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      42m
+kube-apiserver                             4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      43m
+kube-controller-manager                    4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      43m
+kube-scheduler                             4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      43m
+kube-storage-version-migrator              4.4.0-0.okd-2020-04-07-175212-beta2   False       False         False      47m
+machine-api                                4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      46m
+machine-config                             4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      44m
+marketplace                                4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      41m
+monitoring                                                                       False       True          True       36m
+network                                    4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      44m
+node-tuning                                4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      47m
+openshift-apiserver                        4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      39m
+openshift-controller-manager               4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      42m
+openshift-samples                          4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      39m
+operator-lifecycle-manager                 4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      46m
+operator-lifecycle-manager-catalog         4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      46m
+operator-lifecycle-manager-packageserver   4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      13m
+service-ca                                 4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      47m
+service-catalog-apiserver                  4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      47m
+service-catalog-controller-manager         4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      47m
+storage                                    4.4.0-0.okd-2020-04-07-175212-beta2   True        False         False      42m
+
+[damien@localhost openshift-sandbox]$ oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+certificatesigningrequest.certificates.k8s.io/csr-n4clv approved
+certificatesigningrequest.certificates.k8s.io/csr-nr6hp approved
+
+[damien@localhost openshift-sandbox]$ oc get csr
+NAME        AGE   REQUESTOR                                                                   CONDITION
+csr-4kpvk   34m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-4mc6q   49m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-9pt8x   50m   system:node:control-plane-0.sandbox.okd.local                               Approved,Issued
+csr-d7lws   48m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-dcffz   10m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-g4kr5   10m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-hn2pt   33m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-n4clv   29s   system:node:compute-2.sandbox.okd.local                                     Approved,Issued
+csr-nr6hp   18s   system:node:compute-1.sandbox.okd.local                                     Approved,Issued
+csr-nwvvv   50m   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
+csr-tnrt5   48m   system:node:control-plane-2.sandbox.okd.local                               Approved,Issued
+csr-vk897   28m   system:node:compute-0.sandbox.okd.local                                     Approved,Issued
+csr-vs658   49m   system:node:control-plane-1.sandbox.okd.local                               Approved,Issued
+
+
+[damien@localhost openshift-sandbox]$ oc get pods --all-namespaces | grep Pending
+openshift-cluster-storage-operator                      csi-snapshot-controller-operator-55f9cdd7f6-fzj2f                 0/1     Pending     0          77m
+openshift-ingress                                       router-default-697dfdbdb9-wnw65                                   0/1     Pending     0          68m
+openshift-ingress                                       router-default-78d6756977-lkljw                                   0/1     Pending     0          68m
+openshift-kube-storage-version-migrator                 migrator-95785f5b5-2dcj6                                          0/1     Pending     0          74m
+openshift-marketplace                                   community-operators-795d8c78b5-cvrnz                              0/1     Pending     0          7m54s
+openshift-marketplace                                   community-operators-c59985979-phts9                               0/1     Pending     0          68m
+openshift-monitoring                                    kube-state-metrics-777885559b-s9ccd                               0/3     Pending     0          68m
+openshift-monitoring                                    openshift-state-metrics-6b5f5d4f6-xm6tm                           0/3     Pending     0          68m
+openshift-monitoring                                    prometheus-adapter-7d88cf8d9d-4d9l7                               0/1     Pending     0          63m
+openshift-monitoring                                    prometheus-adapter-7d88cf8d9d-52cgr                               0/1     Pending     0          63m
+openshift-monitoring                                    telemeter-client-65ccb68d56-s4nb6                                 0/3     Pending     0          63m
+openshift-monitoring                                    telemeter-client-6694c64b66-dfrr8                                 0/3     Pending     0          68m
+
+oc describe -n openshift-ingress pod/router-default-697dfdbdb9-wnw65
+oc describe -n openshift-cluster-storage-operator pod/csi-snapshot-controller-operator-55f9cdd7f6-fzj2f
+oc describe -n openshift-monitoring pod/prometheus-adapter-7d88cf8d9d-4d9l7
+
+
+
+
+oc get deployment --all-namespaces
+oc get deployment -n openshift-ingress router-default -o yaml
+
+
+oc get rs --all-namespaces
+oc get rs -n openshift-ingress router-default-78d6756977 -oyaml
+
+
+oc get deployment -n openshift-ingress router-default
+
+oc rollout status -n openshift-ingress deployments/router-default
+> error: deployment "router-default" exceeded its progress deadline
+
+
+
+
+oc rollout retry -n openshift-ingress deployments/router-default
+
+oc describe -n openshift-ingress pod/router-default-78d6756977-lkljw
+
+oc logs -n openshift-ingress pod/router-default-78d6756977-lkljw -c router
+> vide
+
+
+oc scale --replicas=0 deployment/router-default -n openshift-ingress
+
+oc scale --replicas=2 deployment/router-default -n openshift-ingress
+
+
+/!\ je me suis fait killer un controle plane ... pas assez de resources !!! bye bye okd ...
