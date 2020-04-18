@@ -65,6 +65,13 @@
               hostname: {{ vm_name }}
               fqdn: {{ vm_name }}.sandbox.okd.local
               manage_etc_hosts: true
+              cloud_config_modules:
+                - resolv_conf
+                - package-update-upgrade-install
+                - runcmd
+              manage_resolv_conf: true
+              resolv_conf:
+                nameservers: ['127.0.0.1','8.8.8.8']
 
               # Users
               users:
@@ -121,7 +128,7 @@
                     10.0.5.64 compute-2.sandbox.okd.local
                   path: /run/myconf/dnsmasq.okd.addnhosts
                 - content: |
-                    # The objectif is to overide the definition of nameserver in /etc/resolv.conf
+                    # The objectif is to overide the definition of nameserver in /etc/resolv.conf if the vm restart
                     # You can define the localhost or virtual machine ip as nameserver but NOT the bridge ip however it will constantly loop
                     # when you will define it as primary nameserver on the host. You will not be able to resolve ip and to connect via ssh.
                     # The dns virtual machine will be used as primary dns. If it fails to resolve the secondary dns will handle it
