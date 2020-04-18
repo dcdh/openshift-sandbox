@@ -70,6 +70,13 @@
               hostname: {{ vm_name }}
               fqdn: {{ vm_name }}.sandbox.okd.local
               manage_etc_hosts: true
+              cloud_config_modules:
+                - resolv_conf
+                - package-update-upgrade-install
+                - runcmd
+              manage_resolv_conf: true
+              resolv_conf:
+                nameservers: ['{{ dns_ip }}']
 
               # Users
               users:
